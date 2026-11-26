@@ -78,6 +78,10 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
 .hero .scroll i{width:1px;height:38px;background:#fff;transform-origin:top;animation:linea 1.8s var(--ease) infinite}
 @keyframes linea{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
+.hero .cita-h{position:absolute;right:5vw;bottom:34px;z-index:3;max-width:330px;text-align:right;font:italic 400 15px/1.45 var(--f);color:#fff;opacity:0}
+.hero .cita-h span{display:block;font:500 11px var(--m);font-style:normal;letter-spacing:.08em;text-transform:uppercase;margin-top:8px;opacity:.8}
+@media (max-width:820px){.hero .cita-h{display:none}}
+
 /* ======================= 2 · MANIFIESTO ======================= */
 .mani{background:var(--noche);color:#ECEBF2;min-height:90vh;display:flex;align-items:center;padding:12vh 5vw;position:relative}
 .mani p{font:800 clamp(38px,6.2vw,112px)/.92 var(--f);font-stretch:62%;letter-spacing:-.01em;text-transform:uppercase}
@@ -97,6 +101,9 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
 .sobre .cont{width:min(520px,44vw);color:#EDEFF6}
 .sobre h2{font:700 clamp(46px,5.6vw,96px)/.9 var(--f);font-stretch:100%;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:26px}
 .sobre p{font:400 15px/1.6 var(--f);color:#B7BCCF;margin-bottom:14px}
+.sobre p b{color:#EDEFF6;font-weight:600}
+.sobre .cita-s{font-style:italic;color:#EDEFF6;border-left:2px solid var(--naranja);padding-left:14px;margin-top:20px}
+.sobre .cita-s span{display:block;font:500 11px var(--m);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#8F95AE;margin-top:6px}
 .sobre .redes{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
 .sobre .redes a{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:9px 14px;font:500 12px var(--f);transition:background .3s,color .3s}
 .sobre .redes a:hover{background:#fff;color:#000}
@@ -119,6 +126,8 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
 .fin h2 a{display:inline-flex;align-items:center;gap:.12em}
 .fin h2 .flecha{display:inline-grid;place-items:center;width:.62em;height:.62em;border-radius:50%;background:var(--naranja);font-size:.4em;transition:transform .6s var(--ease)}
 .fin h2 a:hover .flecha{transform:rotate(-45deg) scale(1.08)}
+.fin .cita-fin{position:relative;max-width:520px;font:italic 400 17px/1.45 var(--f);color:#D6D8E4;margin-top:auto;margin-bottom:5vh}
+.fin .cita-fin span{display:block;font:500 11px var(--m);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#8A8B9C;margin-top:8px}
 .fin .pie{display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;position:relative;color:rgba(255,255,255,.6)}
 .fin .pie a:hover{color:#fff}
 
@@ -133,23 +142,24 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
   background-image:linear-gradient(var(--linea) 1px,transparent 1px),linear-gradient(90deg,var(--linea) 1px,transparent 1px);
   background-size:calc(100vw/12) calc(100vw/12);mask-image:linear-gradient(180deg,#000 0%,transparent 75%);-webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 75%)}
 .p-top{position:absolute;top:max(76px,9vh);left:5vw;right:calc(5vw + 150px);display:flex;justify-content:space-between;gap:24px;color:#8A8B9C;z-index:2}
-.p-cab{position:absolute;left:5vw;bottom:8vh;z-index:2;pointer-events:none}
+.p-cab{position:absolute;left:5vw;right:5vw;top:calc(max(76px,9vh) + 34px);z-index:2;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4vw}
 .p-cab h2{font:200 clamp(56px,9vw,160px)/.86 var(--f);font-stretch:112%;letter-spacing:-.04em;text-transform:uppercase}
-.p-cab p{margin-top:18px;max-width:360px;font:400 15px/1.5 var(--f);color:#B9B8C0}
+.p-cab p{max-width:340px;padding-bottom:1.4vw;font:400 15px/1.5 var(--f);color:#B9B8C0}
 .p-cab p b{color:var(--crema);font-weight:600}
-.iconos{position:absolute;right:26px;top:max(70px,8vh);z-index:3;display:grid;gap:10px;justify-items:center}
-.ico{width:112px;display:grid;justify-items:center;gap:6px;padding:8px 4px 6px;border-radius:10px;font:500 13px/1.2 var(--f);text-align:center;transition:background .2s;color:var(--crema);background:none;border:0;cursor:pointer}
+.iconos{position:absolute;left:5vw;right:5vw;bottom:9vh;z-index:3;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--linea)}
+.ico{width:100%;display:grid;justify-items:start;gap:10px;padding:3vh 1.6vw 2vh;border-radius:0;border-right:1px solid var(--linea);font:500 13px/1.2 var(--f);text-align:left;transition:background .2s;color:var(--crema);background:none;border:0;cursor:pointer}
 .ico:hover{background:rgba(241,239,234,.07)}
-.ico .dib{width:72px;height:60px;display:grid;place-items:center;transition:transform .45s var(--ease)}
+.ico .dib{width:clamp(84px,9vw,150px);height:auto;aspect-ratio:68/56;display:grid;place-items:center;transition:transform .45s var(--ease)}
 .ico:hover .dib{transform:translateY(-3px) scale(1.04)}
 .ico:active .dib{transform:scale(.94)}
 .ico svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
-.ico .nom{padding:2px 7px;border-radius:5px}
-.ico.sel .nom{background:var(--naranja);color:#fff}
-.ico .cnt{font:500 10px var(--m);color:var(--gris2);margin-top:-3px}
-.claudia{position:absolute;z-index:4;width:96px;height:104px;right:170px;bottom:6vh;cursor:pointer;
+.ico .nom{font:200 clamp(22px,2.6vw,44px)/1 var(--f);font-stretch:112%;letter-spacing:-.03em;text-transform:uppercase;padding:0}
+.ico:last-child{border-right:0}
+.ico.sel{background:rgba(241,239,234,.06)}.ico.sel .nom{color:#7D93FF}
+.ico .cnt{font:500 11px var(--m);letter-spacing:.06em;text-transform:uppercase;color:var(--gris2)}
+.claudia{position:absolute;z-index:4;width:96px;height:104px;right:6vw;bottom:calc(9vh + 210px);cursor:pointer;
   background:url(thumbs/claudia.webp) 0 0/800% 900% no-repeat;image-rendering:pixelated;filter:drop-shadow(0 10px 12px rgba(0,0,0,.5))}
-.globo{position:absolute;z-index:5;right:140px;bottom:calc(6vh + 112px);max-width:240px;background:var(--crema);color:var(--noche);font:500 13px/1.4 var(--f);
+.globo{position:absolute;z-index:5;right:calc(6vw + 70px);bottom:calc(9vh + 320px);max-width:240px;background:var(--crema);color:var(--noche);font:500 13px/1.4 var(--f);
   padding:10px 13px;border-radius:14px 14px 4px 14px;opacity:0;transform:translateY(6px) scale(.96);transform-origin:100% 100%;transition:opacity .3s,transform .4s var(--ease);pointer-events:none}
 .globo.on{opacity:1;transform:none}
 
@@ -214,11 +224,11 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
 .app-claudia .sprite{width:192px;height:208px;background:url(thumbs/claudia.webp) 0 0/800% 900% no-repeat;image-rendering:pixelated}
 @media (max-width:820px){
   .p-top{right:5vw}.p-top span:last-child{display:none}
-  .iconos{right:auto;left:0;width:100%;top:112px;grid-template-columns:repeat(4,1fr);padding:0 6px;gap:0}
-  .ico{width:100%;font-size:12px}.ico .dib{width:58px;height:48px}
-  .p-cab h2{font-size:12.4vw}.p-cab{bottom:6vh;right:5vw}
-  .claudia{right:auto;left:50%;margin-left:-40px;bottom:auto;top:262px;width:80px;height:87px}
-  .globo{right:auto;left:50%;translate:-50% 0;bottom:auto;top:360px;max-width:260px;border-radius:14px;text-align:center;transform-origin:50% 0}
+  .iconos{left:5vw;right:5vw;bottom:5vh;grid-template-columns:1fr 1fr}
+  .ico{padding:16px 10px;border-bottom:1px solid var(--linea)}.ico:nth-child(2n){border-right:0}.ico .dib{width:64px}.ico .nom{font-size:22px}
+  .p-cab h2{font-size:12.4vw}.p-cab{flex-direction:column;align-items:flex-start;gap:12px}
+  .claudia{right:5vw;left:auto;margin-left:0;bottom:calc(5vh + 300px);top:auto;width:72px;height:78px}
+  .globo{right:calc(5vw + 50px);left:auto;translate:none;bottom:calc(5vh + 384px);top:auto;max-width:230px}
   .ventana{position:fixed;left:0!important;right:0;top:56px!important;bottom:0;width:auto!important;height:auto!important;border-radius:18px 18px 0 0;min-width:0;z-index:120}
   .vbar{cursor:default}
   .finder{display:block}
@@ -251,7 +261,7 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
 }
 @media (prefers-reduced-motion:reduce){
   body::before{animation:none}
-  .hero h1 .l span{transform:none}.hero .bajada,.hero .links{opacity:1}
+  .hero h1 .l span{transform:none}.hero .bajada,.hero .links,.hero .cita-h{opacity:1}
   .mani .w{opacity:1}
 }
 </style>
@@ -279,6 +289,7 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
   </div>
   <div class="lateral mono">Portafolio<br>Edición 2026<br><br>Video · IA<br>Webs · Juegos</div>
   <div class="scroll mono"><i></i>Desliza</div>
+  <p class="cita-h">«No son las cosas las que nos perturban, sino las opiniones que tenemos sobre ellas.»<span>Epicteto · Enquiridión, 5</span></p>
 </section>
 
 <div class="marq uno" aria-hidden="true"><div class="pista"><span>Creador<i>✦</i></span><span>Inteligencia artificial<i>✦</i></span><span>Video<i>✦</i></span><span>Webs<i>✦</i></span><span>Juegos<i>✦</i></span><span>Medellín<i>✦</i></span></div></div>
@@ -297,6 +308,8 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
       <h2>Sobre<br>mí</h2>
       <p>Estudio Administración de Negocios en EAFIT y construyo casi todo con inteligencia artificial: videos, webs que se mueven, juegos y herramientas que me ahorran horas.</p>
       <p>Mi trabajo es tomar una idea compleja y volverla algo que se entiende en diez segundos y se recuerda por semanas. Lo hago entre la universidad y un bootcamp de programación en Riwi.</p>
+      <p>Me formé como líder en <b>El Líder Sos Vos</b> (2025) y en el diplomado <b>Referentes</b> (2026). Con Referentes sacamos adelante la acción cívica Con-Tacto, donde fui líder de guías.</p>
+      <p class="cita-s">«El bienestar se alcanza poco a poco, y sin embargo no es poca cosa.»<span>Zenón de Citio</span></p>
       <div class="redes"><a href="https://www.linkedin.com/in/emmanuel-ortiz-serna-ba7788378" target="_blank" rel="noopener">LinkedIn ↗</a><a href="https://github.com/emmanueloserna" target="_blank" rel="noopener">GitHub ↗</a><a href="mailto:emmanuel.oserna@gmail.com">emmanuel.oserna@gmail.com</a></div>
     </div>
   </div>
@@ -336,6 +349,7 @@ body::before{content:"";position:fixed;inset:-50%;z-index:90;pointer-events:none
   <div class="glow"></div>
   <span class="mono" style="color:#8A8B9C;position:relative">(04) — ¿Tienes una idea?</span>
   <h2><a href="mailto:emmanuel.oserna@gmail.com">Hablemos <span class="flecha">→</span></a></h2>
+  <p class="cita-fin">«No pierdas más tiempo discutiendo cómo debe ser un buen hombre. Sé uno.»<span>Marco Aurelio · Meditaciones X, 16</span></p>
   <div class="pie mono"><a href="mailto:emmanuel.oserna@gmail.com">emmanuel.oserna@gmail.com</a><a href="https://www.linkedin.com/in/emmanuel-ortiz-serna-ba7788378" target="_blank" rel="noopener">LinkedIn ↗</a><a href="https://github.com/emmanueloserna" target="_blank" rel="noopener">GitHub ↗</a><span>© 2026 Emmanuel Ortiz Serna · Bello, Medellín</span><a href="#inicio">Volver arriba ↑</a></div>
 </section>
 </main>
@@ -603,7 +617,7 @@ const intro=gsap.timeline({delay:.15});
 intro.fromTo('.hero .retrato img',{scale:1.18,filter:'blur(14px) brightness(1) contrast(1)'},{scale:1,filter:'blur(0px) brightness(1) contrast(1)',duration:2.2,ease:'expo.out'})
      .from('.hero .fuego',{height:0,duration:2,ease:'expo.out'},0)
      .to('.hero h1 .l span',{y:0,duration:1.4,stagger:.1,ease:'expo.out'},.25)
-     .to('.hero .bajada,.hero .links',{opacity:1,duration:1,stagger:.1},.9)
+     .to('.hero .bajada,.hero .links,.hero .cita-h',{opacity:1,duration:1,stagger:.1},.9)
      .from('.nav .pill',{scale:.7,opacity:0,stagger:.08,duration:1,ease:'expo.out'},.6);
 
 /* ---------- 1→2: el retrato se hunde en el fuego y la noche ---------- */
@@ -611,7 +625,7 @@ gsap.timeline({scrollTrigger:{trigger:'.hero',start:'top top',end:'+=55%',scrub:
   .to('.hero .retrato',{yPercent:22,scale:.92,ease:'none'},0)
   .fromTo('.hero .retrato img',{filter:'blur(0px) brightness(1) contrast(1)'},{filter:'blur(0px) brightness(.35) contrast(1.2)',ease:'none',immediateRender:false},0)
   .fromTo('.hero .fuego',{height:'46vh'},{height:'120vh',ease:'none',immediateRender:false},0)
-  .to('.hero .txt,.hero .lateral,.hero .scroll',{y:-80,opacity:0,ease:'none'},0)
+  .to('.hero .txt,.hero .lateral,.hero .scroll,.hero .cita-h',{y:-80,opacity:0,ease:'none'},0)
   .to('.hero .noche',{opacity:1,ease:'power2.in',duration:.5},.5);
 
 /* ---------- 2: manifiesto palabra por palabra ---------- */
