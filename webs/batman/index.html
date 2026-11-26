@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Personaje</title>
+<script>/* ?p=nombre: carga personaje.js y encima personaje-nombre.js (una versión que solo cambia lo necesario) */(()=>{const p=new URLSearchParams(location.search).get('p');document.write('<script src="personaje.js"><\/script>'+(p&&/^[\w-]+$/.test(p)?'<script src="personaje-'+p+'.js"><\/script>':''))})();</script>
+<script>document.title=PERSONAJE.t.titulo;document.write('<link href="'+PERSONAJE.fuentes+'" rel="stylesheet">');(()=>{const st=document.documentElement.style;for(const k in PERSONAJE.tema)st.setProperty(k,PERSONAJE.tema[k])})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* =========================================================
+   COLORES DEL PERSONAJE — cambiar aquí para otro personaje
+   ========================================================= */
+:root{
+  --blanco:#F4F2EF; --claro:#E7E6EC;
+  --rojo:#E5131D; --rojo2:#B10E16; --rosa:#F4A3A8;
+  --noche:#0E1638; --negro:#0B0B0B;
+  --serif:'Bodoni Moda',Georgia,serif; --script:'Mr Dafoe',cursive;
+  --fina:var(--serif); --sobre:#fff; --escena:radial-gradient(60% 70% at 50% 46%,#ff3037 0%,#d60f18 46%,#7a070c 100%); --brillo:rgba(229,19,29,.55); --pie:linear-gradient(180deg,var(--blanco) 0%,#f7c3c5 22%,#ef5a62 60%,var(--rojo) 100%);
+  --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{background:var(--negro);color:var(--negro);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body.cargando{overflow:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.mono{font:500 10px/1.55 var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+svg.ar{width:1em;height:1em;fill:currentColor;stroke:currentColor}
+
+/* ---------- loader ---------- */
+.loader{position:fixed;inset:0;z-index:200;background:var(--rojo);display:grid;place-items:center;overflow:hidden}
+.loader .an{position:absolute;left:50%;top:50%;width:46vmax;height:58vmax;margin:-29vmax 0 0 -23vmax;border-radius:48%;transform:scale(0)}
+.loader .arana{position:relative;font-size:min(22vw,180px);z-index:2}
+
+/* ---------- nav ---------- */
+.nav{position:static}
+.logo{position:fixed;left:22px;top:18px;z-index:90}
+.nav-der{position:fixed;right:22px;top:18px;z-index:91}
+.logo,.nav-arana{mix-blend-mode:difference;color:#fff}
+.logo{font:500 17px/.86 var(--serif);letter-spacing:.02em;font-variation-settings:'opsz' 28;display:flex;flex-direction:column}
+.logo span:last-child{font-weight:700;font-size:15px;letter-spacing:.06em}
+.nav-arana{position:fixed;left:calc(50% - 11px);top:18px;font-size:22px;z-index:90}
+.nav-der{display:flex;gap:6px}
+.cta{background:var(--rojo);color:var(--sobre);font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:0 16px;height:30px;border-radius:2px;transition:background .3s}
+.cta:hover{background:var(--rojo2)}
+.cuadro{width:30px;height:30px;border:1px solid currentColor;border-radius:2px;display:grid;place-items:center;mix-blend-mode:difference;color:#fff;font-size:14px}
+
+/* ---------- 1. hero ---------- */
+.hero{position:relative;height:100vh;overflow:hidden;background:var(--blanco)}
+.hero .noche{position:absolute;inset:0;background:var(--noche);opacity:0}
+.hero .lineas{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:1vh;opacity:0;pointer-events:none}
+.linea{white-space:nowrap;font:800 10.5vw/.9 var(--serif);font-variation-settings:'opsz' 28;letter-spacing:-.02em;text-transform:uppercase;will-change:transform}
+.linea.r{color:var(--rojo)} .linea.b{color:#fff}
+.linea span{display:inline-block;padding-right:.35em}
+.marco{position:absolute;inset:0;will-change:transform;transform-origin:50% 50%}
+.escena{position:absolute;inset:0;background:var(--escena);overflow:hidden}
+.escena img{position:absolute;left:50%;bottom:-6vh;height:90vh;width:auto;filter:drop-shadow(0 40px 60px rgba(60,0,4,.55))}
+.capa{position:absolute;inset:0;background:var(--blanco);clip-path:ellipse(130% 170% at 50% 100%);overflow:hidden}
+.capa .arcos{position:absolute;inset:0;pointer-events:none}
+.capa .arcos i{position:absolute;left:50%;top:58%;border:2px solid var(--rojo);border-radius:50%;transform:translate(-50%,-50%);opacity:.14}
+.retrato{position:absolute;left:50%;bottom:0;height:min(94vh,118vw);aspect-ratio:1080/1440}
+.retrato img{position:absolute;inset:0;width:100%;height:100%}
+/* busto en óvalo: la cara nítida y los hombros se disuelven, sin bordes rectos */
+.retrato img{-webkit-mask-image:radial-gradient(ellipse 46% 72% at 50% 36%,#000 58%,rgba(0,0,0,.6) 78%,transparent 100%);mask-image:radial-gradient(ellipse 46% 72% at 50% 36%,#000 58%,rgba(0,0,0,.6) 78%,transparent 100%)}
+#pincel{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y;z-index:2}
+.anillo{position:fixed;left:0;top:0;z-index:95;pointer-events:none;width:var(--r,90px);height:var(--r,90px);margin:calc(var(--r,90px)/-2) 0 0 calc(var(--r,90px)/-2);border:1.5px solid var(--rojo);border-radius:50%;opacity:0;transition:opacity .25s,width .2s,height .2s,margin .2s;display:grid;place-items:center}
+.anillo i{width:5px;height:5px;border-radius:50%;background:var(--rojo)}
+.anillo span{position:absolute;top:calc(100% + 6px);color:var(--acento-texto,var(--rojo));white-space:nowrap}
+.anillo.on{opacity:1}
+.hero.pintando{cursor:none}
+.panel{position:absolute;left:22px;bottom:22px;width:150px;border:1px solid #cfcdc8;background:rgba(244,242,239,.86);backdrop-filter:blur(8px);padding:10px;color:#2a2a2a;z-index:3}
+.panel .fila{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.panel input{width:100%;accent-color:var(--rojo);margin-top:6px}
+.panel .borrar{border:1px solid #2a2a2a;width:26px;height:26px;display:grid;place-items:center;font-size:12px;border-radius:2px}
+.panel .borrar:hover{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.hero .pie{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);color:#5b5954;z-index:3;text-align:center}
+.hero .tit{position:absolute;right:22px;bottom:22px;text-align:right;z-index:3;color:#2a2a2a}
+.firma{position:absolute;left:50%;top:50%;width:min(80vw,980px);transform:translate(-50%,-50%) rotate(-8deg);pointer-events:none;overflow:visible}
+.firma text{font-family:var(--script);font-size:300px;fill:transparent;stroke:var(--rojo);stroke-width:2.4;stroke-dasharray:2400;stroke-dashoffset:2400}
+
+/* ---------- 2. azotea ---------- */
+.azotea{position:relative;height:100vh;background:var(--noche);color:#fff;overflow:hidden;display:grid;place-items:center}
+.azotea .grande{position:absolute;left:50%;top:var(--grande-top,-14vw);font:30vw/1 var(--script);color:var(--rojo);white-space:nowrap;will-change:transform}
+.azotea .centro{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.azotea .centro .ar{font-size:26px;color:#fff}
+.tapado{font:800 clamp(44px,8vw,132px)/.92 var(--serif);font-variation-settings:'opsz' 28;text-transform:uppercase;letter-spacing:-.015em;display:flex;flex-direction:column;align-items:center}
+.tapado .l{position:relative;display:block;padding:0 .04em}
+.tapado .l i{position:absolute;inset:6% -2%;background:var(--rojo);transform-origin:100% 50%}
+.tapado .l:nth-child(2) i{inset:6% -14% 6% 8%}
+.tapado .l:nth-child(3) i{inset:6% 4% 6% -10%}
+.btn-rojo{display:inline-flex;align-items:center;gap:10px;background:var(--rojo);color:var(--sobre);font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:10px 16px;border-radius:2px;transition:transform .5s var(--ease),background .3s}
+.btn-rojo:hover{background:var(--rojo2)}
+
+/* ---------- 3. galería ---------- */
+.galeria{position:relative;height:190vh;background:var(--noche);overflow:hidden}
+.galeria .aclara{position:absolute;inset:0;background:var(--claro);opacity:0}
+.galeria .foto{position:absolute;will-change:transform}
+.galeria .foto img{width:100%;height:100%;object-fit:cover;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.galeria .foto.azul img{filter:grayscale(1) sepia(.9) hue-rotate(180deg) saturate(1.9) brightness(.92) contrast(1.05)}
+.galeria .foto .et{position:absolute;left:0;top:calc(100% + 8px);display:flex;gap:8px;align-items:center;white-space:nowrap;color:#9aa0b8}
+.galeria .foto .et b{width:46px;height:6px;background:var(--rojo)}
+.galeria .texto{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);text-align:center;color:#fff;z-index:2;width:min(90vw,560px)}
+.galeria .texto p:not(.mono){font:400 italic clamp(26px,3.2vw,46px)/1.05 var(--fina);margin-top:12px}
+
+/* ---------- 4. con / sin ---------- */
+.duo{position:relative;height:100vh;background:var(--blanco);overflow:hidden;display:grid;grid-template-columns:1fr 1fr;align-items:center;z-index:2}
+.duo .lado{position:absolute;pointer-events:none;will-change:transform;z-index:1;-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent 98%);mask-image:linear-gradient(180deg,#000 72%,transparent 98%)}
+.duo .lado.izq{left:-15vw;height:58vh;width:auto;top:21vh;-webkit-mask-image:none;mask-image:none;filter:drop-shadow(0 30px 40px rgba(0,0,0,.25))}
+.duo .lado.der{right:-17vw;height:50vh;width:auto;bottom:6vh}
+.duo .col{position:relative;z-index:2;padding:0 6vw;display:flex;flex-direction:column;align-items:flex-start}
+.duo .col:first-of-type{align-items:flex-end;text-align:right}
+.duo h2{display:flex;flex-direction:column;color:var(--noche);text-transform:uppercase;line-height:.86}
+.duo h2 .fina{font:400 italic clamp(38px,5.4vw,92px) var(--fina);letter-spacing:.02em}
+.duo .con .fina{color:transparent;-webkit-text-stroke:1.4px var(--acento-texto,var(--rojo))}
+.duo h2 b{font:900 clamp(44px,6.4vw,112px)/.86 var(--serif);font-variation-settings:'opsz' 28;letter-spacing:-.02em}
+.duo p{max-width:240px;margin:16px 0 14px;font:400 13px/1.5 var(--sans);color:#4a4a52}
+.duo .mini{width:28px;height:18px;background:var(--rojo);display:block;transition:width .5s var(--ease)}
+.duo .col:hover .mini{width:64px}
+
+/* ---------- 5. ciudad ---------- */
+.ciudad{position:relative;height:110vh;overflow:hidden;background:var(--negro)}
+.ciudad .fondo{position:absolute;inset:-10% 0 0 0;width:100%;height:120%;object-fit:cover;will-change:transform}
+.ciudad::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,11,0) 55%,var(--negro) 100%);pointer-events:none}
+.ciudad .camara{position:absolute;right:8vw;bottom:14vh;width:min(36vw,520px);z-index:2;filter:drop-shadow(0 30px 40px rgba(0,0,0,.6));will-change:transform}
+.ciudad .rotulo{position:absolute;left:22px;bottom:16vh;z-index:2;color:#fff}
+.ciudad .rotulo p{font:400 italic clamp(24px,2.8vw,40px)/1.05 var(--fina);max-width:420px;margin-top:10px}
+
+/* ---------- 6. temporada ---------- */
+.temporada{position:relative;background:var(--negro);color:#fff;padding:12vh 4vw 16vh}
+.temporada .cab{display:grid;grid-template-columns:1.2fr 1fr;gap:4vw;align-items:end;margin-bottom:8vh}
+.temporada h2{text-transform:uppercase;line-height:.86}
+.temporada h2 b{display:block;font:900 clamp(48px,7vw,124px)/.86 var(--serif);font-variation-settings:'opsz' 28;letter-spacing:-.02em}
+.temporada h2 i{display:block;font:400 italic clamp(34px,4.6vw,80px)/.9 var(--fina);color:var(--rojo)}
+.temporada .cab p{color:#a8a8ad;max-width:340px}
+.rejilla{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vw;perspective:1200px}
+.rejilla .colm{display:flex;flex-direction:column;gap:1.4vw}
+.rejilla .colm:nth-child(even){margin-top:12vh}
+.carta{position:relative;aspect-ratio:3/4;background:#0f0f10;border:1px solid #2a2a2c;overflow:hidden;transform-style:preserve-3d;transition:border-color .4s,background .4s;cursor:pointer}
+.carta::before,.carta::after{content:"";position:absolute;width:14px;height:14px;border:1px solid #6a6a70;z-index:2;transition:border-color .4s}
+.carta::before{left:6px;top:6px;border-right:0;border-bottom:0}
+.carta::after{right:6px;bottom:6px;border-left:0;border-top:0}
+.carta img{position:absolute;left:10%;top:6%;width:80%;height:72%;object-fit:contain;will-change:transform}
+.carta .dat{position:absolute;left:10px;right:10px;bottom:10px;display:flex;justify-content:space-between;align-items:flex-end}
+.carta .dat strong{font:600 13px var(--sans)} .carta .dat span{color:#8d8d93}
+.carta .precio{text-align:right}.carta .precio em{display:block;font-style:normal;color:#fff;font:600 12px var(--mono)}
+.carta .precio i{display:block;height:4px;width:34px;background:var(--rojo);margin:4px 0 0 auto}
+.carta .anadir{position:absolute;left:0;right:0;bottom:0;height:34px;background:var(--rojo);color:var(--sobre);display:grid;place-items:center;transform:translateY(101%);transition:transform .5s var(--ease);z-index:3}
+.carta:hover{border-color:var(--rojo);background:radial-gradient(70% 60% at 50% 40%,var(--brillo),#0f0f10 70%)}
+.carta:hover::before,.carta:hover::after{border-color:var(--rojo)}
+.carta:hover .anadir{transform:none}
+.cosidas{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;margin-top:16vh}
+.cosidas .ar{font-size:24px;color:var(--rojo)}
+.cosidas p{font:400 italic clamp(22px,2.2vw,32px)/1.15 var(--fina);max-width:520px}
+
+/* ---------- 7. colección ---------- */
+.coleccion{background:var(--negro);padding:0}
+.hoja{position:relative;background:var(--blanco);min-height:110vh;overflow:hidden;will-change:transform;transform-origin:50% 0;padding:16vh 5vw 10vh;display:grid;grid-template-columns:1fr 1.05fr;gap:4vw;align-items:center}
+.hoja .izq .mono{color:#56565d;margin-bottom:18px}
+.hoja h2{font:900 clamp(46px,6.6vw,118px)/.86 var(--serif);font-variation-settings:'opsz' 28;color:var(--noche);text-transform:uppercase;letter-spacing:-.02em;display:flex;flex-direction:column;align-items:flex-start}
+.hoja h2 .l{position:relative}
+.hoja h2 .l i{position:absolute;inset:8% -4% 8% -2%;background:var(--noche);transform-origin:0 50%}
+.hoja .izq p{max-width:360px;margin:22px 0 18px;color:#4a4a52;font-size:14px;line-height:1.55}
+.hoja .der{position:relative;height:78vh}
+.sudadera{position:absolute;right:8%;top:6%;width:58%;height:88%;will-change:transform}
+.sudadera img{width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+.sudadera svg{position:absolute;left:50%;top:44%;width:64%;transform:translate(-50%,-50%);mix-blend-mode:screen;opacity:.92}
+.sudadera .queens{position:absolute;left:50%;top:70%;transform:translateX(-50%);font:900 clamp(18px,2.3vw,38px) var(--serif);letter-spacing:.18em;color:#fff;mix-blend-mode:screen;opacity:.9}
+.polaroid{position:absolute;left:0;bottom:6%;width:30%;background:#fff;padding:8px 8px 28px;box-shadow:0 24px 40px -18px rgba(0,0,0,.4);transform:rotate(-7deg);will-change:transform}
+.polaroid img{aspect-ratio:1;object-fit:cover;width:100%}
+.polaroid span{position:absolute;left:10px;bottom:7px;font:20px var(--script);color:var(--noche)}
+.chapa{position:absolute;right:0;top:0;width:20%;aspect-ratio:3/4;z-index:2;overflow:hidden;box-shadow:0 20px 40px -16px rgba(0,0,0,.4);will-change:transform}
+.chapa img{width:100%;height:100%;object-fit:cover}
+.ppny{position:absolute;right:2%;bottom:-2%;width:40%;transform:rotate(-10deg);overflow:visible}
+.ppny text{font-family:var(--script);font-size:150px;fill:transparent;stroke:var(--rojo);stroke-width:2;stroke-dasharray:1200;stroke-dashoffset:1200}
+
+/* ---------- 8. barrio ---------- */
+.barrio{position:relative;background:var(--blanco);padding:20vh 5vw 14vh;overflow:hidden}
+.barrio .cab{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:center;position:relative}
+.barrio h2{font:900 clamp(56px,8vw,140px)/.84 var(--serif);font-variation-settings:'opsz' 28;color:var(--noche);text-transform:uppercase;letter-spacing:-.02em;position:relative;z-index:1}
+.juntos{position:absolute;left:12%;top:-30%;width:70%;transform:rotate(-14deg);overflow:visible;pointer-events:none;z-index:2}
+.juntos text{font-family:var(--script);font-size:260px;fill:transparent;stroke:var(--rosa);stroke-width:2.4;stroke-dasharray:2600;stroke-dashoffset:2600}
+.barrio .cab p{max-width:380px;color:#4a4a52;font-size:14px;line-height:1.55;justify-self:end}
+.aliados{margin-top:14vh;border-top:1px solid #d6d4cf;border-bottom:1px solid #d6d4cf;overflow:hidden;white-space:nowrap}
+.aliados .pista{display:inline-flex}
+.aliados span{padding:26px 4vw;font-size:clamp(18px,1.7vw,26px);color:var(--noche);border-right:1px solid #d6d4cf;display:inline-flex;align-items:center}
+.aliados .a1{font:800 1.2em var(--serif);letter-spacing:.06em;text-transform:uppercase}
+.aliados .a2{font:1.6em var(--script)}
+.aliados .a3{font:700 1em var(--mono);letter-spacing:.1em}
+.aliados .a4{font:400 italic 1.2em var(--fina)}
+.aliados .a5{font:600 1em var(--sans);letter-spacing:-.02em}
+
+/* ---------- 9. abanico ---------- */
+.abanico{position:relative;height:125vh;background:var(--blanco);overflow:hidden}
+.abanico .fijo{position:sticky;top:0;height:100vh;overflow:hidden}
+.abanico h2{position:absolute;left:50%;top:15vh;transform:translateX(-50%);text-align:center;font:900 clamp(44px,6vw,100px)/.86 var(--serif);font-variation-settings:'opsz' 28;color:var(--noche);text-transform:uppercase;z-index:2}
+.abanico h2 small{display:block;font:400 italic .55em var(--fina);color:var(--acento-texto,var(--rojo));text-transform:none}
+.busca{position:absolute;left:50%;top:calc(15vh + clamp(90px,12vw,200px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2}
+.busca label{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #d6d4cf;border-radius:999px;padding:0 6px 0 16px;height:40px;width:min(80vw,380px)}
+.busca input{flex:1;border:0;outline:0;background:none;font:400 13px var(--sans)}
+.busca button{width:30px;height:30px;border-radius:50%;background:var(--rojo);color:var(--sobre);display:grid;place-items:center}
+.busca .mono{color:#56565d;display:flex;gap:18px}
+.rueda{position:absolute;left:50%;top:80vh;width:0;height:0}
+.rueda .c{position:absolute;left:-7.5vw;top:-21vw;width:15vw;height:21vw;transform-origin:50% 230%;border-radius:10px;overflow:hidden;box-shadow:0 20px 40px -14px rgba(0,0,0,.45);will-change:transform}
+.rueda .c img{width:100%;height:100%;object-fit:cover}
+
+/* ---------- 10. pie ---------- */
+.pie-web{position:relative;background:var(--pie);padding:3vh 1.4vw 1.4vw;overflow:hidden}
+.carpeta{position:relative;background:var(--noche);color:#fff;min-height:92vh;clip-path:polygon(0 4vw,40% 4vw,42% 0,58% 0,60% 4vw,100% 4vw,100% 100%,0 100%);border-radius:10px;padding:10vw 4vw 3vw;display:grid;grid-template-columns:1fr 2fr 1fr;align-items:center;overflow:hidden;will-change:transform}
+.carpeta .centro{text-align:center;position:relative;z-index:2;align-self:start}
+.carpeta .peter{font:clamp(70px,9vw,150px)/.6 var(--script);color:var(--rojo);display:block;transform:rotate(-6deg)}
+.carpeta h2{font:900 clamp(46px,6.6vw,118px)/.86 var(--serif);font-variation-settings:'opsz' 28;text-transform:uppercase;letter-spacing:-.02em;display:flex;flex-direction:column;align-items:center}
+.carpeta h2 .l{position:relative}
+.carpeta h2 .l i{position:absolute;inset:8% -3%;background:var(--rojo);transform-origin:100% 50%}
+.carpeta h2 .rj{color:var(--rojo)}
+.carpeta ul{list-style:none;font:800 clamp(13px,1.15vw,17px)/1.35 var(--serif);text-transform:uppercase;letter-spacing:.04em;position:relative;z-index:2}
+.carpeta ul a:hover{color:var(--rojo)}
+.carpeta .colA{justify-self:start}.carpeta .colB{justify-self:end;text-align:right}
+.carpeta .colA .mono,.carpeta .colB .mono{color:#8e94b3;margin-bottom:10px}
+.carpeta .m3d{position:absolute;left:50%;bottom:-9%;height:46%;width:auto;z-index:1;will-change:transform;filter:drop-shadow(0 0 60px var(--brillo)) drop-shadow(0 -20px 30px var(--brillo))}
+.carpeta .base{position:absolute;left:4vw;right:4vw;bottom:2.4vw;display:flex;justify-content:space-between;align-items:center;z-index:3;font-size:clamp(12px,1.1vw,16px)}
+.carpeta .base span:nth-child(1){font:800 1em var(--serif);letter-spacing:.08em;color:var(--rojo)}
+.carpeta .base span:nth-child(2){font:1.6em var(--script)}
+.carpeta .base span:nth-child(3){font:700 1em var(--mono);letter-spacing:.1em}
+.carpeta .base button{border:1px solid #fff;padding:6px 12px;font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;border-radius:2px}
+.carpeta .base button:hover{background:#fff;color:var(--noche)}
+.legal{display:flex;justify-content:space-between;color:#fff;padding:14px 4px 4px}
+
+/* ---------- celular ---------- */
+@media (max-width:760px){
+  .logo{left:14px;top:14px}.nav-der{right:14px;top:14px}.cta{font-size:9px;padding:0 10px}.nav-arana{top:16px}
+  .retrato{height:76vh}
+  .panel{display:none}.hero .tit{display:none}
+  .linea{font-size:17vw}
+  .duo{grid-template-columns:1fr;grid-template-rows:1fr 1fr;align-items:center}
+  .duo .col,.duo .col:first-of-type{align-items:center;text-align:center}
+  .duo .lado.izq{height:30vh;top:6vh;bottom:auto;left:-14vw}.duo .lado.der{height:34vh;right:-12vw}
+  .duo p{display:none}
+  .temporada .cab,.hoja,.barrio .cab{grid-template-columns:1fr}
+  .rejilla{grid-template-columns:repeat(2,1fr)}
+  .hoja .der{height:60vh}
+  .juntos{top:-12%;left:20%}
+  .rueda .c{left:-17vw;top:-46vw;width:34vw;height:46vw}
+  .carpeta{grid-template-columns:1fr;padding-top:24vw;clip-path:polygon(0 8vw,34% 8vw,38% 0,62% 0,66% 8vw,100% 8vw,100% 100%,0 100%);min-height:110vh}
+  .carpeta .colA,.carpeta .colB{justify-self:center;text-align:center;margin-top:20px}
+  .carpeta .m3d{height:30%;opacity:.9}
+  .carpeta .colB{margin-bottom:34vh}
+  .galeria{height:160vh}.galeria .foto{transform-origin:center}
+  .carpeta .base{flex-wrap:wrap;gap:10px;justify-content:center}
+}
+
+/* ---------- polish 2026-11-26 ---------- */
+::selection{background:var(--rojo);color:var(--sobre,#fff)}
+html{scrollbar-color:var(--rojo) var(--negro)}
+input{caret-color:var(--rojo)}
+.cta,.cuadro,.mini,.btn-rojo,#arriba,.busca button{position:relative}
+.cta::after,.cuadro::after,.btn-rojo::after,#arriba::after,.busca button::after{content:"";position:absolute;inset:-8px}
+.mini::after{content:"";position:absolute;inset:-13px}
+.busca-msg{min-height:1.6em;color:#56565d;text-align:center}
+.busca input::-webkit-search-cancel-button{display:none}
+.carta .anadir{cursor:pointer}.carta.hecha .anadir{transform:none}
+.carpeta ul span{cursor:default}
+.duo .lado.izq{left:-2vw;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24%);mask-image:linear-gradient(90deg,transparent 0,#000 24%)}
+.duo .lado.der{right:-2vw;-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 24%),linear-gradient(180deg,#000 72%,transparent 98%);-webkit-mask-composite:source-in;mask-image:linear-gradient(270deg,transparent 0,#000 24%),linear-gradient(180deg,#000 72%,transparent 98%);mask-composite:intersect}
+@media (max-width:760px){
+  .mono{font-size:11px}.cta{font-size:11px;height:34px}
+  .galeria .foto .et{white-space:normal;width:100%;font-size:9.5px;line-height:1.3}
+  .carpeta ul a,.carpeta ul span,.busca .mono a{display:inline-block;padding:7px 0}
+  .busca .mono{gap:14px}
+  .duo .lado.izq{left:-3vw}.duo .lado.der{right:-3vw}
+  .carpeta{padding-top:30vw}.carpeta .centro{order:-1}
+  .hoja{padding-top:22vh}
+}
+:focus-visible{outline:2px solid var(--rojo);outline-offset:3px}
+.carta:focus-visible{outline-offset:-2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="cargando">
+
+<!-- símbolo del personaje (se llena desde personaje.js) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="simbolo" viewBox="0 0 100 100"></symbol></svg>
+<script>document.getElementById('simbolo').innerHTML=PERSONAJE.simbolo</script>
+
+<div class="loader" aria-hidden="true">
+  <i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i>
+  <svg class="ar arana"><use href="#simbolo"/></svg>
+</div>
+
+<header class="nav">
+  <a class="logo" href="#inicio" aria-label="Inicio"><span data-t="nombre1">PETER</span><span data-t="nombre2">PARKER</span></a>
+  <svg class="ar nav-arana" aria-hidden="true"><use href="#simbolo"/></svg>
+  <div class="nav-der">
+    <button class="cta" id="btnMascara" data-t="cta">Ponte la máscara</button>
+    <a class="cuadro" href="#pie" aria-label="Ir al final">↗</a>
+  </div>
+</header>
+
+<main>
+<!-- 1. HERO: pinta la máscara -->
+<section class="hero" id="inicio">
+  <h1 class="sr"><span data-t="titulo"></span></h1>
+  <div class="noche"></div>
+  <div class="lineas" aria-hidden="true">
+    <div class="linea r"><span data-t="linea1">De tarde, Peter · siempre ·</span><span data-t="linea1">De tarde, Peter · siempre ·</span></div>
+    <div class="linea b"><span data-t="linea2">En la mochila de Queens ·</span><span data-t="linea2">En la mochila de Queens ·</span></div>
+    <div class="linea r"><span data-t="linea3">De noche, el otro ·</span><span data-t="linea3">De noche, el otro ·</span></div>
+  </div>
+  <div class="marco">
+    <div class="escena"><img data-img="mascaraEscena" data-alt="alt_mascara" alt=""></div>
+    <div class="capa">
+      <div class="arcos"><i style="width:120vmin;height:120vmin"></i><i style="width:150vmin;height:150vmin"></i></div>
+      <div class="retrato">
+        <img data-img="cara" data-alt="alt_cara" alt="" fetchpriority="high">
+      </div>
+      <canvas id="pincel" data-aria="lienzo"></canvas>
+    </div>
+  </div>
+  <div class="panel mono">
+    <div>Pincel</div>
+    <input type="range" id="tamano" min="30" max="170" value="90" aria-label="Tamaño del pincel">
+    <div class="fila"><span data-t="pista">Pásale el cursor</span><button class="borrar" id="borrar" aria-label="Borrar pintura">↺</button></div>
+  </div>
+  <p class="pie mono" data-t="hero_pie">Tu amigo y vecino · Queens, NY</p>
+  <div class="tit mono"><div data-t="hero_tit1">Fotógrafo freelance</div><div data-t="hero_tit2">Daily Bugle · desde 2017</div></div>
+  <svg class="firma" viewBox="0 0 1000 420" aria-hidden="true"><text x="500" y="300" text-anchor="middle" data-t="script">Peter</text></svg>
+</section>
+
+<!-- 2. AZOTEA -->
+<section class="azotea" id="azotea">
+  <div class="grande" aria-hidden="true" data-t="script">Peter</div>
+  <div class="centro">
+    <svg class="ar" aria-hidden="true"><use href="#simbolo"/></svg>
+    <p class="mono" data-t="az_mono">Peter Parker · fotos desde arriba</p>
+    <h2 class="tapado"><span class="l"><span data-t="az1">Conoce cada</span><i></i></span><span class="l"><span data-t="az2">azotea</span><i></i></span><span class="l"><span data-t="az3">de Queens</span><i></i></span></h2>
+    <a class="btn-rojo" href="#galeria" data-t="az_btn">Ver las fotos ↓</a>
+  </div>
+</section>
+
+<!-- 3. GALERÍA flotante -->
+<section class="galeria" id="galeria">
+  <div class="aclara"></div>
+  <div class="texto"><p class="mono" data-t="gal_mono">Archivo personal · 2017—hoy</p><p data-t="gal_txt">Fotos que el Bugle nunca publicó.</p></div>
+</section>
+
+<!-- 4. CON / SIN MÁSCARA -->
+<section class="duo" id="con-sin">
+  <img class="lado izq" data-img="mascaraLado" alt="">
+  <img class="lado der" data-img="perfil" alt="">
+  <div class="col con">
+    <h2><span class="fina" data-t="con1">Con</span><b data-t="con2">Máscara</b></h2>
+    <p data-t="con_txt">Cuelga de los edificios, para el tráfico con una telaraña y nunca cobra.</p>
+    <a class="mini" href="#temporada" data-aria="ver_mascaras"></a>
+  </div>
+  <div class="col sin">
+    <h2><span class="fina" data-t="sin1">Sin</span><b data-t="sin2">Máscara</b></h2>
+    <p data-t="sin_txt">Llega tarde a todo, saca 5 en química y le debe la renta a la tía May.</p>
+    <a class="mini" href="#coleccion" aria-label="Ver colección"></a>
+  </div>
+</section>
+
+<!-- 5. CIUDAD -->
+<section class="ciudad">
+  <img class="fondo" data-img="ciudad" alt="">
+  <img class="camara" data-img="camara" alt="">
+  <div class="rotulo"><p class="mono" data-t="ci_mono">40.7282° N · Queens · 23:58</p><p data-t="ci_txt">El mejor ángulo siempre está un piso más arriba.</p></div>
+</section>
+
+<!-- 6. MÁSCARAS DE TEMPORADA -->
+<section class="temporada" id="temporada">
+  <div class="cab">
+    <h2><b data-t="tem1">Máscaras</b><i data-t="tem2">de temporada</i></h2>
+    <p class="mono" data-t="tem_txt">Ocho versiones, una sola cara. Tela elástica, lentes que no se empañan y costuras que aguantan un salto de 40 pisos.</p>
+  </div>
+  <div class="rejilla" id="rejilla"></div>
+  <div class="cosidas">
+    <svg class="ar" aria-hidden="true"><use href="#simbolo"/></svg>
+    <p data-t="cosidas">Cosidas a mano y de noche, con el hilo que hubiera en casa.</p>
+    <a class="btn-rojo" href="#coleccion" data-t="cos_btn">Ver la colección →</a>
+  </div>
+</section>
+
+<!-- 7. COLECCIÓN -->
+<section class="coleccion" id="coleccion">
+  <div class="hoja">
+    <div class="izq">
+      <p class="mono" data-t="col_mono">Colección 01 · Otoño en Queens</p>
+      <h2><span class="l"><span data-t="col1">Colección</span><i></i></span><span class="l"><span data-t="col2">de la</span><i></i></span><span class="l"><span data-t="col3">mochila</span><i></i></span></h2>
+      <p data-t="col_txt">Lo que Peter lleva siempre: sudadera, cámara, un sándwich de la bodega y el traje enrollado al fondo.</p>
+      <a class="btn-rojo" href="#barrio" data-t="col_btn">Comprar sudadera</a>
+    </div>
+    <div class="der">
+      <div class="chapa"><img data-img="chapa" alt=""></div>
+      <div class="sudadera">
+        <img data-img="sudadera" alt="">
+        <svg viewBox="0 0 200 200" fill="none" stroke="#fff" stroke-width="1.3" aria-hidden="true">
+          <g id="tela"></g>
+        </svg>
+        <span class="queens" data-t="sudadera">QUEENS</span>
+      </div>
+      <div class="polaroid"><img data-img="polaroid" alt=""><span data-t="polaroid">Flushing, 2am</span></div>
+      <svg class="ppny" viewBox="0 0 600 240" aria-hidden="true"><text x="300" y="170" text-anchor="middle" data-t="firma">PPNY</text></svg>
+    </div>
+  </div>
+</section>
+
+<!-- 8. LOS DEL BARRIO -->
+<section class="barrio" id="barrio">
+  <div class="cab">
+    <h2 data-t="barrio">Los del<br>barrio</h2>
+    <svg class="juntos" viewBox="0 0 1000 400" aria-hidden="true"><text x="500" y="280" text-anchor="middle" data-t="juntos">Juntos</text></svg>
+    <p data-t="barrio_txt">Nadie salva Queens solo. La bodega de la esquina, la pizzería de siempre y el laboratorio que presta los frascos.</p>
+  </div>
+  <div class="aliados"><div class="pista" id="aliados"></div></div>
+</section>
+
+<!-- 9. SU BARRIO (abanico) -->
+<section class="abanico">
+  <div class="fijo">
+    <h2><span data-t="ab1">Su barrio</span><small data-t="ab2">entero, foto a foto</small></h2>
+    <div class="busca">
+      <label><span class="sr">Buscar</span><input type="search" id="buscaIn" placeholder="Busca un rincón de Queens…" data-ph="busca"><button aria-label="Buscar" id="buscarBtn">→</button></label>
+      <p class="mono busca-msg" id="buscaMsg" aria-live="polite"></p>
+      <div class="mono" data-t="busca_links"></div>
+    </div>
+    <div class="rueda" id="rueda"></div>
+  </div>
+</section>
+
+<!-- 10. PIE -->
+<footer class="pie-web" id="pie">
+  <div class="carpeta">
+    <div class="colA"><p class="mono">Menú</p><ul><li><a href="#inicio">Inicio</a></li><li><a href="#con-sin" data-t="menu_con">Con máscara</a></li><li><a href="#con-sin" data-t="menu_sin">Sin máscara</a></li><li><a href="#temporada">Temporadas</a></li></ul><a class="btn-rojo" style="margin-top:14px" href="#temporada">Tienda</a></div>
+    <div class="centro">
+      <span class="peter" data-t="script"></span>
+      <h2><span class="l"><span class="rj" data-t="pie1">Mira</span><i></i></span><span class="l"><span data-t="pie2">hacia <span class="rj">arriba.</span></span><i></i></span></h2>
+    </div>
+    <div class="colB"><p class="mono">Redes</p><ul><li><span>TikTok</span></li><li><span>Instagram</span></li><li><span>YouTube</span></li><li><span>Twitch</span></li></ul></div>
+    <img class="m3d" data-img="mascara3d" alt="">
+    <div class="base"><span data-t="m1">Bodega Delmar</span><span data-t="m2">Pizza Nueva Gina</span><span data-t="m3">MIDTOWN TECH</span><button id="arriba">Arriba ↑</button></div>
+  </div>
+  <div class="legal mono"><span data-t="legal">© 2026 Peter Parker · Queens, NY</span><span data-t="nota">Proyecto de práctica · no oficial</span></div>
+</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<script>
+/* El personaje (textos, imágenes, tema) vive en personaje.js */
+const J=PERSONAJE.js;
+
+/* ---------- volcar el personaje en la página ---------- */
+if(PERSONAJE.css){const st=document.createElement('style');st.textContent=PERSONAJE.css;document.head.appendChild(st)}
+document.querySelectorAll('[data-t]').forEach(el=>{const v=PERSONAJE.t[el.dataset.t];if(v!=null)el.innerHTML=v});
+document.querySelectorAll('[data-img]').forEach(el=>{el.src=PERSONAJE.img[el.dataset.img]});
+document.querySelectorAll('[data-ph]').forEach(el=>{el.placeholder=PERSONAJE.t[el.dataset.ph]});
+document.querySelectorAll('[data-alt]').forEach(el=>{el.alt=PERSONAJE.t[el.dataset.alt]});
+document.querySelectorAll('[data-aria]').forEach(el=>{el.setAttribute('aria-label',PERSONAJE.t[el.dataset.aria])});
+const gal=document.querySelector('.galeria');
+PERSONAJE.galeria.forEach(([src,l,t,w,h,v,duo,et,foco])=>{const d=document.createElement('div');d.className='foto'+(duo?' azul':'');d.dataset.v=v;
+  d.style.cssText=`left:${l}vw;top:${t}%;width:${w}vw;height:${h}vw`;d.innerHTML=`<img src="${src}" alt="" loading="lazy" decoding="async" style="object-position:${foco||'50% 50%'}">`+(et?`<div class="et mono"><b></b>${et}</div>`:'');gal.appendChild(d)});
+const rej=document.getElementById('rejilla');
+const cols=[...Array(4)].map(()=>{const c=document.createElement('div');c.className='colm';rej.appendChild(c);return c});
+PERSONAJE.mascaras.forEach(([n,p,f,im],i)=>{const a=document.createElement('article');a.className='carta';a.tabIndex=0;
+  a.innerHTML=`<img src="${im||PERSONAJE.img.carta}" alt="${PERSONAJE.t.unidad} ${n}" style="filter:${f}" loading="lazy" decoding="async"><div class="dat"><div><strong>${n}</strong><br><span class="mono">0${i+1} / 08</span></div><div class="precio"><em>${p}</em><i></i></div></div><div class="anadir mono">${PERSONAJE.t.anadir}</div>`;
+  cols[i%4].appendChild(a)});
+const ali=document.getElementById('aliados');const aHTML=PERSONAJE.aliados.map((n,i)=>`<span class="a${i%5+1}">${n}</span>`).join('');ali.innerHTML=aHTML+aHTML;
+const rueda=document.getElementById('rueda');PERSONAJE.rueda.forEach(s=>{const c=document.createElement('div');c.className='c';c.innerHTML=`<img src="${s}" alt="" loading="lazy">`;rueda.appendChild(c)});
+// estampado de la sudadera: telaraña o el símbolo
+(()=>{const g=document.getElementById('tela');if(J.estampado!=='telarana'){g.innerHTML='<use href="#simbolo" x="10" y="10" width="180" height="180" fill="#fff"/>';return}let h='';const cx=100,cy=100;for(let k=0;k<12;k++){const a=k/12*Math.PI*2;h+=`<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a)*96}" y2="${cy+Math.sin(a)*96}"/>`}
+  for(let r=16;r<=96;r+=16){let d='';for(let k=0;k<=12;k++){const a=k/12*Math.PI*2,a0=(k-1)/12*Math.PI*2;const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;if(k===0)d+=`M${x} ${y}`;else{const m=(a+a0)/2;d+=` Q${cx+Math.cos(m)*r*.82} ${cy+Math.sin(m)*r*.82} ${x} ${y}`}}h+=`<path d="${d}"/>`}g.innerHTML=h})();
+
+/* ---------- motor ---------- */
+gsap.registerPlugin(ScrollTrigger);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fino=matchMedia('(hover:hover) and (pointer:fine)').matches;
+gsap.set('.escena img,.retrato,.azotea .grande,.carpeta .m3d',{xPercent:-50});
+let lenis=null;
+if(!reduce){lenis=new Lenis({lerp:.14,smoothWheel:true,wheelMultiplier:1.1});lenis.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0);lenis.stop();}
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');if(id.length<2)return;const el=document.querySelector(id);if(!el)return;e.preventDefault();lenis?lenis.scrollTo(el,{duration:1.4}):el.scrollIntoView()}));
+document.getElementById('arriba').addEventListener('click',()=>lenis?lenis.scrollTo(0,{duration:2}):scrollTo(0,0));
+
+/* ---------- 0. loader ---------- */
+const colores=J.loader;
+document.querySelectorAll('.loader .an').forEach((e,i)=>e.style.background=colores[i]);
+const intro=gsap.timeline({paused:true,onComplete:()=>{medir();document.querySelector('.loader').remove();document.body.classList.remove('cargando');lenis&&lenis.start();ScrollTrigger.refresh()}});
+intro.fromTo('.loader .arana',{scale:.45,color:J.loaderIcono[0]},{scale:1.25,color:J.loaderIcono[1],duration:1,ease:'power2.inOut'})
+     .to('.loader .an',{scale:5.5,duration:1,ease:'power3.in',stagger:.07},.75)
+     .to('.loader .arana',{scale:2.4,opacity:0,duration:.5,ease:'power2.in'},1.05)
+     .to('.loader',{opacity:0,duration:.45,ease:'power2.out'},1.3)
+     .from('.retrato',{scale:1.12,yPercent:6,duration:1.3,ease:'expo.out'},1.25)
+     .from('.capa .arcos i',{scale:.6,opacity:0,duration:1.4,ease:'expo.out',stagger:.1},1.55)
+     .from('.panel,.hero .pie,.hero .tit,.nav-der',{opacity:0,y:14,duration:.8,ease:'expo.out',stagger:.06},1.7);
+const listo=()=>intro.play();
+if(reduce){intro.progress(1);gsap.set('.tapado .l i,.hoja h2 .l i,.carpeta h2 .l i',{scaleX:0})}
+else Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))]).then(()=>setTimeout(listo,150));
+
+/* ---------- 1. pincel que pinta la máscara (v2: trazo con cerdas, relieve y goteo) ---------- */
+const lienzo=document.getElementById('pincel'),ctx=lienzo.getContext('2d');
+// la pintura vive en 6 capas por tiempo: cada trazo queda sólido ~0,9 s y luego se va en 0,6 s
+const NB=6,SPAN=250,capasT=[...Array(NB)].map(()=>{const c=document.createElement('canvas');return{c,x:c.getContext('2d'),t0:0,usada:false}});let actual=0;let pc=capasT[0].x;
+const pintura=document.createElement('canvas'),cc=pintura.getContext('2d');
+const capaM=document.createElement('canvas'),mc=capaM.getContext('2d');
+const capaR=document.createElement('canvas'),rc=capaR.getContext('2d');
+const imgM=new Image();imgM.src=PERSONAJE.img.mascara;
+let MX=0,MY=0,MW=1,MH=1,W=0,H=0,DPR=Math.min(devicePixelRatio||1,1.25),radio=90,ultimo=null,activo=0,quieto=0,cabeza=null,velo=0,dir=0,limpio=true;
+const gotas=[];
+function mapaCabeza(){}
+// cabeza aproximada como elipse sobre el retrato (sin leer píxeles: funciona también abriendo el archivo directo)
+function enCabeza(x,y){const dx=(x-(MX+MW*.5))/(MW*.3),dy=(y-(MY+MH*.3))/(MH*.3);return dx*dx+dy*dy<1}
+function medir(){const r=lienzo.getBoundingClientRect(),q=document.querySelector('.retrato').getBoundingClientRect();W=Math.round(r.width*DPR);H=Math.round(r.height*DPR);MX=(q.left-r.left)*DPR;MY=(q.top-r.top)*DPR;MW=q.width*DPR;MH=q.height*DPR;[lienzo,pintura,capaM,capaR,...capasT.map(b=>b.c)].forEach(c=>{c.width=W;c.height=H});mapaCabeza()}
+imgM.onload=mapaCabeza;medir();addEventListener('resize',medir);
+// sprite de cerdas: núcleo sólido + estrías largas a lo ancho (se orienta con el trazo)
+const brocha=document.createElement('canvas');brocha.width=brocha.height=200;(()=>{const b=brocha.getContext('2d');b.fillStyle='#000';b.strokeStyle='#000';
+  b.beginPath();b.ellipse(100,100,56,48,0,0,7);b.fill();
+  for(let i=0;i<420;i++){const y=100+(Math.random()*2-1)*86,lim=Math.sqrt(Math.max(0,86*86-(y-100)**2)),x0=100-lim*(.4+Math.random()*.6),x1=100+lim*(.4+Math.random()*.6);
+    b.globalAlpha=.35+Math.random()*.65;b.lineWidth=.8+Math.random()*3.2;b.beginPath();b.moveTo(x0,y);b.lineTo(x1,y+(Math.random()-.5)*4);b.stroke()}
+  for(let i=0;i<120;i++){const a=Math.random()*6.28,d=70+Math.random()*24;b.globalAlpha=.5;b.beginPath();b.arc(100+Math.cos(a)*d,100+Math.sin(a)*d*.8,.8+Math.random()*2.2,0,7);b.fill()}})();
+function sello(x,y,r,ang){r*=.92+Math.random()*.16;pc.save();pc.translate(x,y);pc.rotate(ang+(Math.random()-.5)*.3);pc.drawImage(brocha,-r*1.15,-r,r*2.3,r*2);pc.restore()}
+function salpicar(x,y,r){const a=Math.random()*6.28,d=r*(1.2+Math.random()*1.9),n=1+Math.random()*4|0;pc.fillStyle='#000';
+  for(let k=0;k<n;k++){const rr=(1.5+Math.random()*(k?3:6))*DPR;pc.beginPath();pc.arc(x+Math.cos(a)*(d+k*9*DPR),y+Math.sin(a)*(d+k*9*DPR),rr,0,7);pc.fill()}}
+function trazo(x,y){
+  let ang=dir;if(ultimo){const dx=x-ultimo[0],dy=y-ultimo[1],dist=Math.hypot(dx,dy);velo=velo*.7+dist*.3;if(dist>1)dir=ang=Math.atan2(dy,dx);
+    const r=radio*DPR*.5*(1.12-.4*Math.min(1,velo/(40*DPR)));const paso=Math.max(1.5,r*.16);
+    for(let s=paso;s<dist;s+=paso)sello(ultimo[0]+dx*s/dist,ultimo[1]+dy*s/dist,r,ang)}
+  const r=radio*DPR*.5*(1.12-.4*Math.min(1,velo/(40*DPR)));sello(x,y,r,ang);
+  if(Math.random()<.16)salpicar(x,y,r);
+  if(!enCabeza(x,y+r*.6)&&Math.random()<.09)gotas.push({x:x+(Math.random()-.5)*r,y:y+r*.55,r:(2.5+Math.random()*4)*DPR,vy:(.5+Math.random()*1.2)*DPR,vida:50+Math.random()*70});
+  capasT[actual].usada=true;ultimo=[x,y];activo=performance.now();limpio=false}
+function pos(e){const r=lienzo.getBoundingClientRect();return[(e.clientX-r.left)*DPR,(e.clientY-r.top)*DPR]}
+const hero=document.querySelector('.hero');
+// cursor-pincel: un anillo del tamaño del pincel
+const anillo=document.createElement('div');anillo.className='anillo';anillo.innerHTML='<i></i><span class="mono">pinta</span>';document.body.appendChild(anillo);
+const ax=gsap.quickTo(anillo,'x',{duration:.18,ease:'power3'}),ay=gsap.quickTo(anillo,'y',{duration:.18,ease:'power3'}),asc=gsap.quickTo(anillo,'scale',{duration:.25,ease:'power3'});
+const puedePintar=()=>!mascaraPuesta&&scrollHero<.04&&!document.body.classList.contains('cargando');
+hero.addEventListener('pointermove',e=>{const sobreUI=e.target.closest('.panel,.nav-der,.logo');
+  if(fino){ax(e.clientX);ay(e.clientY);const ver=puedePintar()&&!sobreUI;anillo.classList.toggle('on',ver);hero.classList.toggle('pintando',ver);
+    asc(1+Math.min(.5,velo/(70*DPR)))}
+  if(!puedePintar()||sobreUI)return;if(e.pointerType==='touch'&&!e.isPrimary)return;const[x,y]=pos(e);trazo(x,y);quieto=performance.now()});
+hero.addEventListener('pointerleave',()=>{ultimo=null;anillo.classList.remove('on');hero.classList.remove('pintando')});
+hero.addEventListener('pointerdown',e=>{if(e.target.closest('.panel,.nav-der,.logo')||!puedePintar())return;const[x,y]=pos(e);ultimo=null;for(let k=0;k<3;k++)salpicar(x,y,radio*DPR*.4);trazo(x,y)});
+const tam=document.getElementById('tamano');tam.addEventListener('input',e=>{radio=+e.target.value;anillo.style.setProperty('--r',radio+'px')});anillo.style.setProperty('--r',radio+'px');
+document.getElementById('borrar').addEventListener('click',()=>{capasT.forEach(b=>{b.x.clearRect(0,0,W,H);b.usada=false});gotas.length=0});
+// pincel fantasma: si nadie pinta, pinta solo una pasada por los ojos
+let fantasma=null;
+function lanzarFantasma(){const cx=MX+MW*.5,cy=MY+MH*.26,axx=MW*.34,ayy=MH*.07,t0=performance.now(),dur=1700,fase=Math.random()*6;ultimo=null;
+  fantasma=t=>{const u=(t-t0)/dur;if(u>1){fantasma=null;ultimo=null;return}const a=fase+u*Math.PI*2.6;trazo(cx+Math.sin(a)*axx*(1-u*.35),cy+Math.sin(a*2)*ayy+u*MH*.1)}}
+let scrollHero=0,mascaraPuesta=false;
+gsap.ticker.add(()=>{const t=performance.now();
+  if(fantasma)fantasma(t);
+  else if(!reduce&&puedePintar()&&t-quieto>2600&&t-activo>2400)lanzarFantasma();
+  // gotas que escurren
+  if(gotas.length)capasT[actual].usada=true;
+  for(let i=gotas.length-1;i>=0;i--){const g=gotas[i];pc.fillStyle='#000';pc.beginPath();pc.arc(g.x,g.y,g.r,0,7);pc.fill();g.y+=g.vy;g.vy*=.992;g.r*=.993;if(--g.vida<0||g.r<.8){pc.beginPath();pc.arc(g.x,g.y,g.r*1.6,0,7);pc.fill();gotas.splice(i,1)}else activo=Math.max(activo,t-1500)}
+  // rotar la capa de tiempo
+  if(t-capasT[actual].t0>SPAN){actual=(actual+1)%NB;const b=capasT[actual];b.x.clearRect(0,0,W,H);b.usada=false;b.t0=t;pc=b.x}
+  if(limpio)return;
+  cc.clearRect(0,0,W,H);let hay=false;
+  for(const b of capasT){if(!b.usada)continue;const edad=t-b.t0-SPAN,al=edad<900?1:Math.max(0,1-(edad-900)/600);if(al<=0){b.usada=false;b.x.clearRect(0,0,W,H);continue}hay=true;cc.globalAlpha=al;cc.drawImage(b.c,0,0)}
+  cc.globalAlpha=1;
+  if(!hay&&!gotas.length){ctx.clearRect(0,0,W,H);limpio=true;return}
+  // capa roja (pintura fresca) y capa máscara, cada una con relieve
+  rc.clearRect(0,0,W,H);rc.globalCompositeOperation='source-over';rc.drawImage(pintura,0,0);rc.globalCompositeOperation='source-in';
+  const gr=rc.createLinearGradient(0,0,W,H);gr.addColorStop(0,J.pintura[0]);gr.addColorStop(1,J.pintura[1]);rc.fillStyle=gr;rc.fillRect(0,0,W,H);rc.globalCompositeOperation='source-over';
+  ctx.clearRect(0,0,W,H);ctx.save();ctx.shadowColor=J.sombraPintura;ctx.shadowBlur=7*DPR;ctx.shadowOffsetY=3*DPR;ctx.drawImage(capaR,0,0);
+  if(imgM.complete){mc.clearRect(0,0,W,H);mc.globalCompositeOperation='source-over';mc.drawImage(pintura,0,0);mc.drawImage(pintura,0,0);mc.globalCompositeOperation='source-in';mc.drawImage(imgM,MX,MY,MW,MH);mc.globalCompositeOperation='source-over';
+    ctx.shadowColor='rgba(0,0,0,.3)';ctx.drawImage(capaM,0,0)}
+  ctx.restore();
+  // brillo húmedo: un toque claro en el borde superior de la pintura
+  ctx.save();ctx.globalCompositeOperation='source-atop';ctx.globalAlpha=.16;ctx.drawImage(pintura,-1.5*DPR,-2*DPR);ctx.restore();
+});
+
+/* ---------- 1b. botón: ponte / quítate la máscara (telón curvo) ---------- */
+const btn=document.getElementById('btnMascara');
+btn.addEventListener('click',()=>{
+  if(scrollHero>.04){lenis?lenis.scrollTo(0,{duration:1.2}):scrollTo(0,0)}
+  mascaraPuesta=!mascaraPuesta;anillo.classList.remove('on');hero.classList.remove('pintando');btn.innerHTML=mascaraPuesta?PERSONAJE.t.cta2:PERSONAJE.t.cta;
+  gsap.to('.capa',{clipPath:mascaraPuesta?'ellipse(130% 0% at 50% 100%)':'ellipse(130% 170% at 50% 100%)',duration:1.1,ease:'expo.inOut'});
+  if(mascaraPuesta)gsap.fromTo('.escena img',{scale:1.18,yPercent:8},{scale:1,yPercent:0,duration:1.4,ease:'expo.out',delay:.15});
+});
+// la máscara respira y sigue al mouse
+if(!reduce){gsap.to('.escena img',{scaleY:1.012,scaleX:1.008,duration:1.8,ease:'sine.inOut',yoyo:true,repeat:-1,transformOrigin:'50% 100%'});}
+
+/* ---------- 1c. scroll: la foto se encoge, cae la noche ---------- */
+const tlHero=gsap.timeline({scrollTrigger:{trigger:'.hero',start:'top top',end:'+=100%',scrub:.4,pin:true,onUpdate:s=>scrollHero=s.progress}});
+tlHero.to('.marco',{scale:.3,borderRadius:8,ease:'none',duration:1},0)
+  .fromTo('.capa .retrato img',{filter:'grayscale(0) contrast(1)'},{filter:'grayscale(1) contrast(1.05)',ease:'none',duration:.6,immediateRender:false},0)
+  .to('.hero .noche',{opacity:1,ease:'none',duration:.35},0)
+  .to('.panel,.hero .pie,.hero .tit',{opacity:0,y:20,duration:.2},0)
+  .to('.hero .lineas',{opacity:1,duration:.25},.1)
+  .fromTo('.firma text',{strokeDashoffset:2400},{strokeDashoffset:0,ease:'none',duration:.45},.55)
+  .to('.firma text',{fill:J.acento,duration:.12},.95);
+gsap.set('.marco',{overflow:'hidden'});
+
+/* ---------- marquesinas (corren solas y aceleran con el scroll) ---------- */
+function marquesina(el,dir,dur){const tw=dir>0?gsap.fromTo(el,{xPercent:-50},{xPercent:0,duration:dur,ease:'none',repeat:-1}):gsap.to(el,{xPercent:-50,duration:dur,ease:'none',repeat:-1});
+  gsap.ticker.add(()=>{const v=lenis?Math.abs(lenis.velocity):0;tw.timeScale(1+Math.min(5,v*.1))});return tw}
+if(!reduce){document.querySelectorAll('.linea').forEach((l,i)=>marquesina(l,i%2?1:-1,26+i*4));marquesina(document.querySelector('.aliados .pista'),-1,30)}
+
+/* ---------- 2. azotea: barras rojas que destapan ---------- */
+gsap.from('.azotea .grande',{yPercent:-40,ease:'none',scrollTrigger:{trigger:'.azotea',start:'top bottom',end:'bottom top',scrub:.4}});
+gsap.to('.azotea .tapado .l i',{scaleX:0,duration:.7,ease:'expo.inOut',stagger:.12,scrollTrigger:{trigger:'.azotea .tapado',start:'top 72%'}});
+gsap.from('.azotea .centro > :not(h2)',{y:20,opacity:0,duration:.7,ease:'expo.out',stagger:.08,scrollTrigger:{trigger:'.azotea',start:'top 60%'}});
+
+/* ---------- 3. galería: profundidad, flotar y aclarar ---------- */
+document.querySelectorAll('.galeria .foto').forEach((f,i)=>{const v=+f.dataset.v;
+  gsap.fromTo(f,{y:()=>innerHeight*v*.55},{y:()=>-innerHeight*v*.55,ease:'none',scrollTrigger:{trigger:'.galeria',start:'top bottom',end:'bottom top',scrub:.3}});
+  if(!reduce)gsap.to(f.querySelector('img'),{y:gsap.utils.random(-14,14),rotate:gsap.utils.random(-1.6,1.6),duration:gsap.utils.random(2.2,3.6),ease:'sine.inOut',yoyo:true,repeat:-1});
+  gsap.from(f,{opacity:0,scale:.86,duration:.8,ease:'expo.out',scrollTrigger:{trigger:f,start:'top 95%'}})});
+gsap.to('.galeria .aclara',{opacity:1,ease:'none',scrollTrigger:{trigger:'.galeria',start:'45% center',end:'65% center',scrub:.3}});
+gsap.to('.galeria .texto',{color:J.texto,ease:'none',scrollTrigger:{trigger:'.galeria',start:'35% center',end:'60% center',scrub:.3}});
+gsap.to('.galeria .texto',{yPercent:-120,ease:'none',scrollTrigger:{trigger:'.galeria',start:'top top',end:'bottom top',scrub:.3}});
+
+/* ---------- 4. con / sin ---------- */
+gsap.from('.duo .lado.izq',{xPercent:-70,ease:'none',scrollTrigger:{trigger:'.duo',start:'top bottom',end:'top 20%',scrub:.4}});
+gsap.from('.duo .lado.der',{xPercent:70,ease:'none',scrollTrigger:{trigger:'.duo',start:'top bottom',end:'top 20%',scrub:.4}});
+gsap.from('.duo .col > *',{y:40,opacity:0,duration:.8,ease:'expo.out',stagger:.07,scrollTrigger:{trigger:'.duo',start:'top 55%'}});
+if(fino){const qL=gsap.quickTo('.duo .lado.izq','x',{duration:.8,ease:'power3'}),qR=gsap.quickTo('.duo .lado.der','x',{duration:.8,ease:'power3'});
+  document.querySelector('.duo .con').addEventListener('pointerenter',()=>{qL(innerWidth*.07);qR(innerWidth*.05)});
+  document.querySelector('.duo .sin').addEventListener('pointerenter',()=>{qR(-innerWidth*.07);qL(-innerWidth*.05)});
+  document.querySelector('.duo').addEventListener('pointerleave',()=>{qL(0);qR(0)})}
+if(!reduce){gsap.to('.duo .lado.izq',{rotate:2,y:-10,duration:3,ease:'sine.inOut',yoyo:true,repeat:-1});gsap.to('.duo .lado.der',{rotate:-1.5,y:-8,duration:3.4,ease:'sine.inOut',yoyo:true,repeat:-1})}
+
+/* ---------- 5. ciudad ---------- */
+gsap.fromTo('.ciudad .fondo',{yPercent:-12,scale:1.18},{yPercent:6,scale:1,ease:'none',scrollTrigger:{trigger:'.ciudad',start:'top bottom',end:'bottom top',scrub:.4}});
+gsap.fromTo('.ciudad .camara',{y:()=>innerHeight*.4,rotate:-14},{y:()=>-innerHeight*.25,rotate:6,ease:'none',scrollTrigger:{trigger:'.ciudad',start:'top bottom',end:'bottom top',scrub:.4}});
+gsap.from('.ciudad .rotulo > *',{y:30,opacity:0,duration:.8,ease:'expo.out',stagger:.08,scrollTrigger:{trigger:'.ciudad',start:'top 40%'}});
+
+/* ---------- 6. temporada ---------- */
+gsap.from('.temporada .cab > *',{y:50,opacity:0,duration:.8,ease:'expo.out',stagger:.1,scrollTrigger:{trigger:'.temporada',start:'top 70%'}});
+gsap.utils.toArray('.rejilla .colm').forEach((c,i)=>{gsap.from(c.children,{y:80,opacity:0,rotateX:22,duration:.8,ease:'expo.out',stagger:.12,delay:i*.06,scrollTrigger:{trigger:'.rejilla',start:'top 80%'}});
+  gsap.to(c,{y:()=>-(i%2?innerHeight*.12:innerHeight*.03),ease:'none',scrollTrigger:{trigger:'.rejilla',start:'top bottom',end:'bottom top',scrub:.4}})});
+document.querySelectorAll('.carta').forEach((c,i)=>{const im=c.querySelector('img');
+  if(!reduce)gsap.to(im,{y:-8,duration:2+i%3*.4,ease:'sine.inOut',yoyo:true,repeat:-1,delay:i*.2});
+  if(fino){const rx=gsap.quickTo(c,'rotationX',{duration:.6,ease:'power3'}),ry=gsap.quickTo(c,'rotationY',{duration:.6,ease:'power3'}),sc=gsap.quickTo(im,'scale',{duration:.6,ease:'power3'});
+    c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();ry(((e.clientX-r.left)/r.width-.5)*16);rx(-((e.clientY-r.top)/r.height-.5)*12);sc(1.08)});
+    c.addEventListener('pointerleave',()=>{rx(0);ry(0);sc(1)})}});
+gsap.from('.cosidas > *',{y:30,opacity:0,duration:.8,ease:'expo.out',stagger:.08,scrollTrigger:{trigger:'.cosidas',start:'top 80%'}});
+
+/* ---------- 7. colección ---------- */
+gsap.fromTo('.hoja',{scale:.84,borderRadius:28},{scale:1,borderRadius:0,ease:'none',scrollTrigger:{trigger:'.coleccion',start:'top bottom',end:'top top',scrub:.4}});
+gsap.to('.hoja h2 .l i',{scaleX:0,duration:.7,ease:'expo.inOut',stagger:.12,scrollTrigger:{trigger:'.hoja h2',start:'top 75%'}});
+gsap.from('.hoja .izq > :not(h2)',{y:24,opacity:0,duration:.7,ease:'expo.out',stagger:.08,scrollTrigger:{trigger:'.hoja',start:'top 50%'}});
+gsap.from('.sudadera',{y:120,opacity:0,duration:1,ease:'expo.out',scrollTrigger:{trigger:'.hoja',start:'top 55%'}});
+gsap.from('.polaroid',{y:160,rotate:-24,opacity:0,duration:1,ease:'expo.out',scrollTrigger:{trigger:'.hoja',start:'top 45%'}});
+gsap.from('.chapa',{y:-80,opacity:0,duration:1,ease:'expo.out',scrollTrigger:{trigger:'.hoja',start:'top 45%'}});
+gsap.to('.ppny text',{strokeDashoffset:0,duration:1.6,ease:'power2.inOut',scrollTrigger:{trigger:'.hoja .der',start:'top 50%'}});
+gsap.to('.ppny text',{fill:J.acento,duration:.4,delay:1.4,scrollTrigger:{trigger:'.hoja .der',start:'top 50%'}});
+if(!reduce){gsap.to('.sudadera',{y:-12,rotate:.8,duration:2.6,ease:'sine.inOut',yoyo:true,repeat:-1});gsap.to('.polaroid',{y:-10,rotate:-5,duration:2.2,ease:'sine.inOut',yoyo:true,repeat:-1});J.estampado==='telarana'&&gsap.to('.sudadera svg',{rotate:360,duration:60,ease:'none',repeat:-1})}
+gsap.to('.chapa',{y:()=>-innerHeight*.12,ease:'none',scrollTrigger:{trigger:'.hoja',start:'top bottom',end:'bottom top',scrub:.4}});
+
+/* ---------- 8. barrio ---------- */
+gsap.from('.barrio h2',{y:60,opacity:0,duration:.9,ease:'expo.out',scrollTrigger:{trigger:'.barrio',start:'top 70%'}});
+gsap.to('.juntos text',{strokeDashoffset:0,duration:1.6,ease:'power2.inOut',scrollTrigger:{trigger:'.barrio',start:'top 60%'}});
+gsap.to('.juntos text',{fill:J.juntos,fillOpacity:.9,duration:.5,delay:1.3,scrollTrigger:{trigger:'.barrio',start:'top 60%'}});
+gsap.from('.barrio .cab p',{y:30,opacity:0,duration:.8,ease:'expo.out',scrollTrigger:{trigger:'.barrio',start:'top 60%'}});
+
+/* ---------- 9. abanico que gira ---------- */
+const cartas=gsap.utils.toArray(".rueda .c"),nC=cartas.length;
+cartas.forEach((c,i)=>gsap.set(c,{rotate:(i-(nC-1)/2)*3}));
+const tlAb=gsap.timeline({scrollTrigger:{trigger:'.abanico',start:'top bottom',end:'bottom bottom',scrub:.5}});
+tlAb.fromTo('.rueda',{y:()=>innerHeight*.25},{y:()=>-innerHeight*.2,ease:'none',duration:1},0);
+cartas.forEach((c,i)=>tlAb.to(c,{rotate:(i-(nC-1)/2)*11,ease:'none',duration:1},0));
+tlAb.from('.abanico h2,.busca',{y:40,opacity:0,duration:.25,stagger:.05},0);
+if(!reduce)gsap.to('.rueda',{rotate:3,duration:3,ease:'sine.inOut',yoyo:true,repeat:-1});
+
+/* ---------- 10. pie ---------- */
+gsap.from('.carpeta',{y:()=>innerHeight*.12,ease:'none',scrollTrigger:{trigger:'.pie-web',start:'top bottom',end:'top 10%',scrub:.4}});
+gsap.from('.carpeta .m3d',{yPercent:45,ease:'none',scrollTrigger:{trigger:'.pie-web',start:'top 70%',end:'bottom bottom',scrub:.4}});
+gsap.to('.carpeta h2 .l i',{scaleX:0,duration:.7,ease:'expo.inOut',stagger:.14,scrollTrigger:{trigger:'.carpeta',start:'top 45%'}});
+gsap.from('.carpeta .peter',{opacity:0,scale:.6,rotate:-20,duration:.9,ease:'expo.out',scrollTrigger:{trigger:'.carpeta',start:'top 45%'}});
+gsap.from('.carpeta ul li,.carpeta .base > *',{y:16,opacity:0,duration:.6,ease:'expo.out',stagger:.04,scrollTrigger:{trigger:'.carpeta',start:'top 35%'}});
+if(!reduce){gsap.to('.carpeta .m3d',{scale:1.02,duration:2,ease:'sine.inOut',yoyo:true,repeat:-1,transformOrigin:'50% 100%'})}
+
+/* ---------- parallax con el mouse ---------- */
+if(fino&&!reduce){const capas=[['.escena img',-18,-10],['.galeria .foto',14,10],['.carpeta .m3d',-16,-6],['.ciudad .camara',-20,-12]];
+  const qs=capas.flatMap(([s,ax,ay])=>[...document.querySelectorAll(s)].map((el,k)=>{const f=s==='.galeria .foto'?(+el.dataset.v+.3):1;return[gsap.quickTo(el,'x',{duration:1.1,ease:'power3'}),ax*f,el,ay*f]}));
+  addEventListener('pointermove',e=>{const x=e.clientX/innerWidth-.5;qs.forEach(([q,ax])=>q(x*ax))})}
+
+/* ---------- buscador del archivo y botón de las cartas ---------- */
+(()=>{const inp=document.getElementById('buscaIn'),msg=document.getElementById('buscaMsg'),T=PERSONAJE.t||{};
+  const fotos=[...document.querySelectorAll('.galeria .foto')].filter(f=>f.querySelector('.et'));
+  const norm=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  function buscar(q){q=norm((q||inp.value).trim());if(!q){msg.textContent='';return}
+    const hit=fotos.find(f=>norm(f.querySelector('.et').textContent).includes(q))||fotos.find(f=>q.split(/\s+/).some(w=>w.length>2&&norm(f.querySelector('.et').textContent).includes(w)));
+    if(!hit){msg.textContent=(T.sin_resultado||'Nada en el archivo con')+' «'+inp.value.trim()+'»';return}
+    msg.textContent=(T.encontrado||'Encontrado:')+' '+hit.querySelector('.et').textContent.trim();
+    const ir=()=>{gsap.fromTo(hit,{scale:1.25},{scale:1,duration:.9,ease:'expo.out'});gsap.fromTo(hit.querySelector('img'),{outline:'3px solid '+getComputedStyle(document.documentElement).getPropertyValue('--rojo')},{outline:'0px solid transparent',duration:1.6,delay:.6})};
+    lenis?lenis.scrollTo(hit,{offset:-innerHeight*.35,duration:1.2,onComplete:ir}):(hit.scrollIntoView({block:'center'}),ir())}
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
+  document.getElementById('buscarBtn').addEventListener('click',()=>buscar());
+  document.querySelectorAll('.busca .mono a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();inp.value=a.textContent;buscar(a.textContent)},true));
+  document.querySelectorAll('.carta').forEach(c=>{const b=c.querySelector('.anadir'),t0=b.textContent;
+    const toggle=()=>{c.classList.toggle('hecha');b.textContent=c.classList.contains('hecha')?(T.anadido||'Añadida ✓'):t0;gsap.fromTo(b,{scaleX:.6},{scaleX:1,duration:.5,ease:'expo.out'})};
+    b.setAttribute('role','button');c.addEventListener('click',toggle);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}})})})();
+if(typeof PERSONAJE.alFinal==='function')PERSONAJE.alFinal({gsap,ScrollTrigger,lenis,reduce,fino});
+addEventListener('load',()=>ScrollTrigger.refresh());
+</script>
+</body>
+</html>

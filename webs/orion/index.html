@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Orión: Caza de Bugs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+	--fondo: #05070D; --panel: #0B1020; --panel2: #111830; --linea: rgba(242,245,250,.14);
+	--blanco: #F2F5FA; --gris: #8792A8; --lima: #C6FF3D; --cian: #36E2FF; --ambar: #FFB224; --rojo: #FF4D5E; --rosa: #FF5FD2; --morado: #A07CFF;
+	--pixel: 'Silkscreen', monospace; --texto: 'Space Grotesk', sans-serif; --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+textarea, pre, code, .mono { font-variant-ligatures: none; font-feature-settings: 'liga' 0, 'calt' 0; }
+html, body { height: 100%; background: #000; overflow: hidden; color: var(--blanco); font-family: var(--texto); -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+#escena { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 50%, #0b1124, #000 75%); }
+#marco { position: relative; }
+#juego { display: block; image-rendering: pixelated; image-rendering: crisp-edges; cursor: none; }
+#crt { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px); box-shadow: inset 0 0 120px rgba(0,0,0,.75); }
+
+/* ── HUD */
+#hud { position: absolute; inset: 0; pointer-events: none; font-family: var(--pixel); }
+.oculto { display: none !important; }
+#barras { position: absolute; top: 10px; left: 10px; background: rgba(5,7,13,.82); border: 2px solid var(--linea); border-radius: 8px; padding: 8px 10px; display: grid; grid-template-columns: 22px 150px 46px; gap: 5px 8px; align-items: center; font-size: 12px; }
+.barra { height: 12px; background: #1a2138; border: 1px solid #000; border-radius: 3px; overflow: hidden; position: relative; }
+.barra i { position: absolute; inset: 0; transform-origin: left; transition: transform .15s; }
+.barra.vida i { background: linear-gradient(#ff7a88, var(--rojo)); }
+.barra.escudo i { background: linear-gradient(#e6ecf7, #8f9bb5); }
+.barra.energia i { background: linear-gradient(#8ff0ff, #1597b8); }
+.barra::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(0,0,0,.45) 14px 15px); }
+#arriba { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); text-align: center; text-shadow: 0 2px 0 #000; }
+#arriba .cub { font-size: 11px; letter-spacing: 3px; color: var(--gris); }
+#arriba .nom { font-size: 16px; letter-spacing: 2px; }
+#objetivo { margin-top: 6px; font-size: 11px; letter-spacing: 1px; color: var(--ambar); background: rgba(5,7,13,.85); border: 1px solid rgba(255,178,36,.5); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
+#objetivo:empty { display: none; }
+#objetivo.nuevo { animation: objetivo 1.2s ease-out; }
+@keyframes objetivo { 0% { transform: scale(1.25); box-shadow: 0 0 24px rgba(255,178,36,.8); } }
+#controles { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--gris); background: rgba(5,7,13,.85); border: 1px solid var(--linea); border-radius: 8px; padding: 6px 12px; white-space: nowrap; }
+#controles .tecla { margin: 0 4px 0 10px; }
+#controles .tecla:first-child { margin-left: 0; }
+#derecha { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#mapa { background: rgba(5,7,13,.82); border: 2px solid var(--linea); border-radius: 8px; image-rendering: pixelated; }
+#bytes { font-size: 13px; background: rgba(5,7,13,.82); border: 2px solid var(--linea); border-radius: 8px; padding: 5px 10px; color: var(--ambar); }
+#arma { position: absolute; bottom: 12px; right: 12px; background: rgba(5,7,13,.86); border: 2px solid var(--lima); border-radius: 10px; padding: 8px 14px; min-width: 190px; }
+#arma .n { font-size: 14px; color: var(--lima); }
+#arma .e { font-family: var(--mono); font-size: 11px; color: var(--gris); margin-top: 2px; }
+#arma .s { font-size: 10px; color: var(--gris); margin-top: 4px; }
+#jefe { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: min(520px, 60%); text-align: center; }
+#jefe .nom { font-size: 14px; color: var(--rojo); letter-spacing: 3px; text-shadow: 0 0 12px var(--rojo); margin-bottom: 4px; }
+#jefe .barra { height: 14px; border: 2px solid var(--rojo); }
+#jefe .barra i { background: linear-gradient(90deg, var(--rojo), #ff9a5b); }
+#jefe.escudo .barra i { background: linear-gradient(90deg, var(--cian), #b6f6ff); }
+#accion { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); font-size: 13px; background: rgba(5,7,13,.9); border: 2px solid var(--cian); border-radius: 8px; padding: 6px 14px; color: var(--cian); white-space: nowrap; animation: latido 1s infinite; }
+@keyframes latido { 50% { box-shadow: 0 0 18px rgba(54,226,255,.5); } }
+.tecla { display: inline-block; background: var(--blanco); color: #000; border-radius: 4px; padding: 0 6px; margin-right: 6px; box-shadow: 0 2px 0 var(--gris); }
+#avisos { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.aviso { font-size: 13px; padding: 7px 14px; border-radius: 8px; background: rgba(5,7,13,.92); border: 2px solid var(--lima); color: var(--lima); animation: entra .3s ease-out, sale .4s ease-in 2.6s forwards; white-space: nowrap; }
+.aviso.ambar { border-color: var(--ambar); color: var(--ambar); }
+.aviso.cian { border-color: var(--cian); color: var(--cian); }
+.aviso.rojo { border-color: var(--rojo); color: var(--rojo); }
+@keyframes entra { from { opacity: 0; transform: translateY(-10px) scale(.9); } }
+@keyframes sale { to { opacity: 0; transform: translateY(-8px); } }
+
+/* ── Capas de pantalla completa */
+.capa { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+.velo { background: rgba(2,3,8,.78); backdrop-filter: blur(3px); }
+.caja { background: var(--panel); border: 2px solid var(--linea); border-radius: 14px; padding: 26px; width: min(720px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-shadow: 0 20px 80px rgba(0,0,0,.6); user-select: text; -webkit-user-select: text; }
+.kicker { font-family: var(--pixel); font-size: 12px; letter-spacing: 3px; color: var(--cian); }
+.titulo { font-family: var(--pixel); font-size: 26px; margin: 6px 0 14px; line-height: 1.1; }
+.btn { font-family: var(--pixel); font-size: 14px; padding: 12px 18px; border-radius: 10px; border: 2px solid var(--lima); background: var(--lima); color: #05070D; transition: transform .1s, box-shadow .15s; }
+.btn:hover { box-shadow: 0 0 22px rgba(198,255,61,.45); transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); }
+.btn.sec { background: transparent; color: var(--blanco); border-color: var(--gris); }
+.btn.sec:hover { box-shadow: 0 0 16px rgba(242,245,250,.15); }
+.btn:disabled { opacity: .35; pointer-events: none; }
+.fila { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* inicio */
+#inicio { flex-direction: column; text-align: center; background: radial-gradient(circle at 50% 40%, rgba(198,255,61,.12), transparent 55%), #05070D; overflow: hidden; }
+#inicio::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(242,245,250,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(242,245,250,.05) 1px, transparent 1px); background-size: 40px 40px; animation: rejilla 6s linear infinite; }
+@keyframes rejilla { to { background-position: 0 40px; } }
+#estrellas { position: absolute; inset: 0; }
+#inicio .logo { position: relative; font-family: var(--pixel); font-size: clamp(34px, 7vw, 76px); line-height: .95; color: var(--lima); text-shadow: 0 0 30px rgba(198,255,61,.55), 0 5px 0 #2a3a0a; }
+#inicio .logo small { display: block; font-size: .42em; color: var(--blanco); text-shadow: none; letter-spacing: 6px; margin-bottom: 8px; }
+#inicio canvas.heroe { position: relative; image-rendering: pixelated; margin: 22px 0 6px; filter: drop-shadow(0 0 24px rgba(54,226,255,.45)); }
+#inicio p { position: relative; color: var(--gris); max-width: 520px; margin: 0 auto 22px; font-size: 16px; }
+#inicio .fila { position: relative; justify-content: center; }
+#inicio .guardado { position: relative; font-size: 13px; color: var(--cian); margin-top: 12px; min-height: 18px; }
+#inicio .ayuda { position: relative; font-family: var(--pixel); font-size: 11px; color: var(--gris); margin-top: 22px; letter-spacing: 1px; line-height: 2; }
+
+/* diálogo */
+#dialogo { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(760px, calc(100% - 24px)); z-index: 9; display: flex; gap: 16px; align-items: stretch; background: rgba(8,12,26,.96); border: 2px solid var(--cian); border-radius: 14px; padding: 14px; box-shadow: 0 0 40px rgba(54,226,255,.25); cursor: pointer; }
+#dialogo.chispa { border-color: var(--lima); box-shadow: 0 0 40px rgba(198,255,61,.25); }
+#retrato { width: 96px; height: 96px; flex: 0 0 96px; background: radial-gradient(circle, rgba(54,226,255,.25), #05070d 70%); border-radius: 10px; image-rendering: pixelated; border: 2px solid var(--linea); }
+#dialogo .quien { font-family: var(--pixel); font-size: 13px; color: var(--cian); letter-spacing: 2px; }
+#dialogo.chispa .quien { color: var(--lima); }
+#dialogo .txt { font-size: 19px; line-height: 1.4; margin-top: 6px; min-height: 54px; }
+#dialogo .sig { font-family: var(--pixel); font-size: 10px; color: var(--gris); margin-top: 6px; text-align: right; animation: latido 1s infinite; }
+
+/* banner de cubierta / jefe */
+#banner { position: fixed; inset: 0; z-index: 8; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#banner .franja { position: absolute; left: 0; right: 0; height: 13vh; background: #000; }
+#banner .franja.a { top: 0; animation: franjaA 3s both; }
+#banner .franja.b { bottom: 0; animation: franjaB 3s both; }
+@keyframes franjaA { 0% { transform: translateY(-100%); } 12%, 85% { transform: none; } 100% { transform: translateY(-100%); } }
+@keyframes franjaB { 0% { transform: translateY(100%); } 12%, 85% { transform: none; } 100% { transform: translateY(100%); } }
+#banner .k { font-family: var(--pixel); letter-spacing: 6px; font-size: 14px; color: var(--gris); animation: suave 3s both; }
+#banner .t { font-family: var(--pixel); font-size: clamp(30px, 6vw, 64px); text-align: center; animation: aparece 3s both .1s; padding: 0 16px; }
+#banner .f { font-size: 20px; color: var(--blanco); margin-top: 10px; font-style: italic; animation: suave 3s both .25s; text-align: center; padding: 0 16px; text-shadow: 0 2px 0 #000; }
+@keyframes suave { 0% { opacity: 0; transform: translateY(10px); } 15%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes aparece { 0% { opacity: 0; transform: scale(1.3); letter-spacing: 20px; } 15%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* preguntas */
+#quiz .q { font-size: 21px; line-height: 1.35; margin-bottom: 14px; font-weight: 700; }
+pre.cod { font-family: var(--mono); font-size: 14px; background: #070B16; border: 1px solid var(--linea); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; overflow: auto; line-height: 1.55; color: #dfe6f3; }
+pre.cod .nl { color: var(--gris); display: inline-block; width: 22px; user-select: none; }
+.opciones { display: grid; gap: 10px; }
+.opcion { text-align: left; padding: 12px 14px; border-radius: 10px; background: var(--panel2); border: 2px solid var(--linea); font-size: 16px; display: flex; gap: 12px; align-items: center; transition: border-color .15s, transform .1s; font-family: var(--texto); }
+.opcion:hover { border-color: var(--cian); transform: translateX(3px); }
+.opcion .n { font-family: var(--pixel); color: var(--cian); font-size: 13px; width: 22px; }
+.opcion code { font-family: var(--mono); font-size: 14px; }
+.opcion.bien { border-color: var(--lima); background: rgba(198,255,61,.12); }
+.opcion.mal { border-color: var(--rojo); background: rgba(255,77,94,.12); }
+.explica { margin-top: 14px; padding: 12px 14px; border-left: 6px solid var(--lima); background: rgba(198,255,61,.07); border-radius: 6px; font-size: 16px; line-height: 1.45; }
+.explica.mal { border-color: var(--ambar); background: rgba(255,178,36,.08); }
+.explica b { font-family: var(--pixel); font-size: 12px; letter-spacing: 2px; display: block; margin-bottom: 4px; }
+
+/* terminal de código */
+#terminal .caja { width: min(1180px, 100%); padding: 18px; }
+#terminal .cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; }
+#terminal .enun { font-size: 16px; line-height: 1.5; background: var(--panel2); border-radius: 10px; padding: 12px 14px; border-left: 6px solid var(--cian); }
+#terminal .enun b { color: var(--cian); font-family: var(--mono); font-weight: 400; }
+#terminal h4 { font-family: var(--pixel); font-size: 11px; letter-spacing: 2px; color: var(--gris); margin: 12px 0 6px; font-weight: 400; }
+#vista { width: 100%; height: 170px; border: 2px solid var(--linea); border-radius: 10px; background: #fff; }
+#editor { width: 100%; height: 330px; resize: vertical; background: #070B16; color: #e8eef9; border: 2px solid var(--linea); border-radius: 10px; padding: 12px 14px; font-family: var(--mono); font-size: 14px; line-height: 1.55; tab-size: 2; outline: none; user-select: text; -webkit-user-select: text; }
+#editor:focus { border-color: var(--cian); box-shadow: 0 0 0 3px rgba(54,226,255,.15); }
+#resultados { display: grid; gap: 6px; margin-top: 10px; font-size: 15px; }
+#resultados div { padding: 7px 10px; border-radius: 8px; background: var(--panel2); display: flex; gap: 10px; align-items: center; }
+#resultados .si { color: var(--lima); }
+#resultados .no { color: var(--rojo); }
+#pistaTxt { margin-top: 10px; }
+#terminal .fila { margin-top: 12px; }
+.ori-mini { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.ori-mini canvas { width: 48px; height: 48px; image-rendering: pixelated; }
+
+/* bitácora */
+#bitacora .caja { width: min(980px, 100%); }
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tarjeta { background: var(--panel2); border: 2px solid var(--linea); border-radius: 12px; padding: 12px 14px; }
+.tarjeta h5 { font-family: var(--mono); font-size: 15px; color: var(--lima); margin-bottom: 6px; }
+.tarjeta p { font-size: 14px; color: #C9D1E0; line-height: 1.4; }
+.tarjeta pre { font-family: var(--mono); font-size: 12px; background: #070B16; border-radius: 8px; padding: 8px 10px; margin-top: 8px; overflow: auto; color: #dfe6f3; }
+.tarjeta.bloqueada { opacity: .35; }
+.tarjeta.bloqueada h5 { color: var(--gris); }
+
+/* resumen final / game over */
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 14px 0 18px; }
+.stat { background: var(--panel2); border-radius: 10px; padding: 12px; text-align: center; }
+.stat b { display: block; font-family: var(--pixel); font-size: 28px; color: var(--lima); }
+.stat span { font-size: 13px; color: var(--gris); }
+
+/* ── controles táctiles */
+#tactil { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+#palanca { position: absolute; left: 22px; bottom: 22px; width: 130px; height: 130px; border-radius: 50%; background: rgba(242,245,250,.07); border: 2px solid rgba(242,245,250,.2); pointer-events: auto; touch-action: none; }
+#palanca i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px; border-radius: 50%; background: rgba(198,255,61,.35); border: 2px solid var(--lima); }
+.bt { position: absolute; border-radius: 50%; pointer-events: auto; touch-action: none; font-family: var(--pixel); font-size: 12px; display: flex; align-items: center; justify-content: center; background: rgba(5,7,13,.6); border: 2px solid var(--linea); color: var(--blanco); }
+#btDisparo { right: 24px; bottom: 34px; width: 92px; height: 92px; border-color: var(--lima); color: var(--lima); }
+#btDash { right: 128px; bottom: 22px; width: 62px; height: 62px; }
+#btE { right: 40px; bottom: 140px; width: 58px; height: 58px; border-color: var(--cian); color: var(--cian); }
+#btQ { right: 112px; bottom: 100px; width: 50px; height: 50px; }
+#btPausa { right: 12px; top: 120px; width: 44px; height: 44px; font-size: 14px; }
+
+@media (max-width: 820px) {
+	#terminal .cuerpo { grid-template-columns: 1fr; }
+	#barras { grid-template-columns: 18px 90px 40px; font-size: 10px; padding: 6px 8px; }
+	#arma { bottom: auto; top: 96px; right: 10px; min-width: 0; padding: 6px 10px; }
+	#arma .s { display: none; }
+	#arriba .nom { font-size: 12px; }
+	#dialogo .txt { font-size: 16px; }
+	#retrato { width: 64px; height: 64px; flex-basis: 64px; }
+	#accion { bottom: 170px; }
+}
+@media (max-height: 520px) {
+	#barras { top: 4px; left: 4px; grid-template-columns: 14px 64px 30px; gap: 2px 5px; font-size: 8px; padding: 4px 6px; border-width: 1px; }
+	.barra { height: 7px; }
+	#arriba { top: 3px; }
+	#arriba .cub { display: none; }
+	#arriba .nom { font-size: 10px; }
+	#objetivo { font-size: 8px; padding: 2px 6px; margin-top: 3px; }
+	#objetivo { margin-top: 6px; font-size: 11px; letter-spacing: 1px; color: var(--ambar); background: rgba(5,7,13,.85); border: 1px solid rgba(255,178,36,.5); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
+#objetivo:empty { display: none; }
+#objetivo.nuevo { animation: objetivo 1.2s ease-out; }
+@keyframes objetivo { 0% { transform: scale(1.25); box-shadow: 0 0 24px rgba(255,178,36,.8); } }
+#controles { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--gris); background: rgba(5,7,13,.85); border: 1px solid var(--linea); border-radius: 8px; padding: 6px 12px; white-space: nowrap; }
+#controles .tecla { margin: 0 4px 0 10px; }
+#controles .tecla:first-child { margin-left: 0; }
+#derecha { top: 4px; right: 4px; gap: 4px; }
+	#mapa { width: 64px; height: 64px; border-width: 1px; }
+	#bytes { font-size: 9px; padding: 2px 6px; border-width: 1px; }
+	#arma { top: 54px; left: 4px; right: auto; bottom: auto; min-width: 0; padding: 3px 8px; border-width: 1px; }
+	#arma .n { font-size: 9px; }
+	#arma .e, #arma .s { display: none; }
+	#avisos { top: 30px; }
+	.aviso { font-size: 10px; padding: 4px 10px; }
+	#accion { bottom: auto; top: 40px; font-size: 10px; }
+	#jefe { bottom: 4px; }
+	#palanca { width: 112px; height: 112px; left: 14px; bottom: 14px; }
+	#palanca i { width: 46px; height: 46px; margin: -23px; }
+	#btDisparo { width: 78px; height: 78px; right: 16px; bottom: 20px; }
+	#btDash { width: 54px; height: 54px; right: 104px; bottom: 12px; }
+	#btE { width: 50px; height: 50px; right: 28px; bottom: 112px; }
+	#btQ { width: 42px; height: 42px; right: 96px; bottom: 80px; }
+	#btPausa { top: auto; bottom: 170px; right: 10px; width: 38px; height: 38px; }
+	#inicio { justify-content: flex-start; overflow-y: auto; padding-top: 14px; }
+	#inicio .logo { font-size: 34px; }
+	#inicio canvas.heroe { width: 75px; height: 80px; margin: 8px 0 2px; }
+	#inicio p { font-size: 13px; margin-bottom: 10px; }
+	#inicio .guardado { position: relative; font-size: 13px; color: var(--cian); margin-top: 12px; min-height: 18px; }
+#inicio .ayuda { display: none; }
+	#dialogo { bottom: 6px; padding: 8px; gap: 10px; }
+	#dialogo .txt { font-size: 14px; min-height: 0; }
+	#retrato { width: 52px; height: 52px; flex-basis: 52px; }
+	.caja { padding: 14px; }
+	#quiz .q { font-size: 16px; }
+	.opcion { padding: 8px 10px; font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<div id="escena">
+	<div id="marco">
+		<canvas id="juego"></canvas>
+		<div id="crt"></div>
+		<div id="hud" class="oculto">
+			<div id="barras">
+				<span style="color:var(--rojo)">♥</span><div class="barra vida"><i id="bVida"></i></div><span id="tVida">6/6</span>
+				<span style="color:#cdd5e6">◆</span><div class="barra escudo"><i id="bEscudo"></i></div><span id="tEscudo">5/5</span>
+				<span style="color:var(--cian)">⚡</span><div class="barra energia"><i id="bEnergia"></i></div><span id="tEnergia">200</span>
+			</div>
+			<div id="arriba"><div class="cub" id="hCub">CUBIERTA 1</div><div class="nom" id="hNom">SALA DE MÁQUINAS</div><div id="objetivo"></div></div>
+			<div id="controles" class="oculto"><span class="tecla">WASD</span>mover <span class="tecla">CLIC</span>disparar <span class="tecla">ESPACIO</span>esquivar <span class="tecla">E</span>usar <span class="tecla">Q</span>arma</div>
+			<div id="derecha"><canvas id="mapa" width="110" height="110"></canvas><div id="bytes">◈ <span id="tBytes">0</span> bytes</div></div>
+			<div id="arma"><div class="n" id="aNom">Pistola Click</div><div class="e" id="aEv">addEventListener('click')</div><div class="s" id="aCosto">Costo: 0 ⚡ · Q cambia</div></div>
+			<div id="jefe" class="oculto"><div class="nom" id="jNom">JEFE</div><div class="barra"><i id="bJefe"></i></div></div>
+			<div id="accion" class="oculto"></div>
+			<div id="avisos"></div>
+		</div>
+	</div>
+</div>
+
+<div id="tactil" class="oculto">
+	<div id="palanca"><i></i></div>
+	<div class="bt" id="btDisparo">FUEGO</div>
+	<div class="bt" id="btDash">DASH</div>
+	<div class="bt" id="btE">E</div>
+	<div class="bt" id="btQ">Q</div>
+	<div class="bt" id="btPausa">❚❚</div>
+</div>
+
+<!-- Inicio -->
+<div id="inicio" class="capa">
+	<canvas id="estrellas"></canvas>
+	<div class="logo"><small>ORIÓN</small>CAZA DE BUGS</div>
+	<canvas class="heroe" id="heroeInicio" width="150" height="160"></canvas>
+	<p>Eres <b style="color:var(--lima)">Chispa</b>. El núcleo de la nave se llenó de bugs. Destrúyelos, abre cofres respondiendo y hackea las terminales con <b style="color:var(--cian)">JavaScript de verdad</b>.</p>
+	<div class="fila"><button class="btn" id="btnJugar">▶ JUGAR</button><button class="btn sec oculto" id="btnNueva">NUEVA PARTIDA</button><button class="btn sec" id="btnBitacoraInicio">BITÁCORA</button></div>
+	<div class="guardado" id="guardadoInfo"></div>
+	<div class="ayuda">WASD MOVER · MOUSE APUNTAR · CLIC DISPARAR · ESPACIO ESQUIVAR<br>E INTERACTUAR · Q CAMBIAR ARMA · ESC PAUSA · M MÚSICA</div>
+</div>
+
+<!-- Diálogo -->
+<div id="dialogo" class="oculto"><canvas id="retrato" width="96" height="96"></canvas><div style="flex:1"><div class="quien" id="dQuien">ORI</div><div class="txt" id="dTxt"></div><div class="sig">ESPACIO / CLIC ▸</div></div></div>
+
+<div id="banner" class="oculto"></div>
+
+<!-- Pregunta -->
+<div id="quiz" class="capa velo oculto"><div class="caja">
+	<div class="kicker" id="qKicker">COFRE · PREGUNTA</div>
+	<div class="titulo" id="qTitulo">Ábrelo con conocimiento</div>
+	<div class="q" id="qTexto"></div>
+	<pre class="cod oculto" id="qCodigo"></pre>
+	<div class="opciones" id="qOpciones"></div>
+	<div id="qExplica"></div>
+	<div class="fila" style="margin-top:14px"><button class="btn oculto" id="qSeguir">CONTINUAR ▸</button></div>
+</div></div>
+
+<!-- Terminal -->
+<div id="terminal" class="capa velo oculto"><div class="caja">
+	<div class="ori-mini"><canvas id="oriMini" width="48" height="48"></canvas><div><div class="kicker">TERMINAL DE ORI · RETO DE CÓDIGO</div><div class="titulo" id="tTitulo" style="margin:4px 0 0">Reto</div></div></div>
+	<div class="cuerpo">
+		<div>
+			<div class="enun" id="tEnun"></div>
+			<h4>EL HTML QUE YA EXISTE</h4>
+			<pre class="cod" id="tHtml" style="margin:0"></pre>
+			<h4>VISTA PREVIA (pruébala tú)</h4>
+			<iframe id="vista" sandbox="allow-scripts"></iframe>
+		</div>
+		<div>
+			<h4 style="margin-top:0">TU JAVASCRIPT (app.js)</h4>
+			<textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+			<div class="fila"><button class="btn" id="tProbar" title="Ctrl/⌘ + Enter">▶ PROBAR <span style="opacity:.6;font-size:10px">⌘↵</span></button><button class="btn sec" id="tPista" disabled>💡 PISTA</button><button class="btn sec" id="tSolucion" disabled>VER SOLUCIÓN</button><button class="btn sec" id="tSalir">SALIR</button></div>
+			<div id="resultados"></div>
+			<div id="pistaTxt"></div>
+		</div>
+	</div>
+</div></div>
+
+<!-- Pausa -->
+<div id="pausa" class="capa velo oculto"><div class="caja" style="width:min(420px,100%);text-align:center">
+	<div class="titulo">PAUSA</div>
+	<div style="display:grid;gap:10px">
+		<button class="btn" id="pSeguir">CONTINUAR</button>
+		<button class="btn sec" id="pBitacora">📘 BITÁCORA</button>
+		<button class="btn sec" id="pMusica">♪ MÚSICA: SÍ</button>
+		<button class="btn sec" id="pSalir">GUARDAR Y SALIR</button>
+	</div>
+</div></div>
+
+<!-- Bitácora -->
+<div id="bitacora" class="capa velo oculto"><div class="caja">
+	<div class="kicker">📘 BITÁCORA DE CHISPA</div>
+	<div class="titulo">Lo que ya sabes</div>
+	<p style="color:var(--gris);margin-bottom:14px" id="bResumen"></p>
+	<div class="tarjetas" id="bTarjetas"></div>
+	<div class="fila" style="margin-top:16px"><button class="btn" id="bCerrar">CERRAR</button></div>
+</div></div>
+
+<!-- Fin -->
+<div id="fin" class="capa velo oculto"><div class="caja" style="text-align:center">
+	<div class="kicker" id="fKicker">MISIÓN CUMPLIDA</div>
+	<div class="titulo" id="fTitulo">NÚCLEO LIMPIO</div>
+	<div class="stats" id="fStats"></div>
+	<div class="fila" style="justify-content:center"><button class="btn" id="fBoton">JUGAR DE NUEVO</button><button class="btn sec" id="fBitacora">📘 BITÁCORA</button></div>
+</div></div>
+
+<script src="sprites.js"></script>
+<script src="datos.js"></script>
+<script src="juego.js"></script>
+</body>
+</html>
